@@ -1,14 +1,17 @@
 # Visualize It
 
-Este projeto demonstra como criar uma aplicação web interativa para visualização de clusterização de dados usando Streamlit e scikit-learn.
+Este projeto utiliza técnicas avançadas de visualização de dados para analisar acidentes ferroviários no Brasil, baseado em dados públicos da ANTT (Agência Nacional de Transportes Terrestres) [disponiveis aqui](https://dados.antt.gov.br/dataset/relatorio-de-acompanhamento-de-acidentes-ferroviarios-raaf).
 
-## Funcionalidades
+## Técnicas de Visualização Avançadas
 
-- Geração de dados aleatórios em 2D
-- Clusterização usando o algoritmo K-means
-- Visualização interativa dos clusters
-- Ajuste do número de clusters através de um slider
-- Exibição dos dados em uma tabela
+O projeto explora as seguintes técnicas de visualização avançadas:
+
+1. **Mapas Interativos**: Utiliza Plotly Express para criar mapas interativos que mostram a distribuição geográfica dos acidentes.
+2. **Gráficos de Barras Dinâmicos**: Apresenta informações sobre acidentes por concessionária e UF.
+3. **Gráficos de Linhas Temporais**: Mostra a evolução dos acidentes ao longo do tempo.
+4. **Gráficos de Pizza Interativos**: Visualiza a distribuição de causas diretas e natureza dos acidentes.
+5. **Clusterização Geoespacial**: Aplica K-means para agrupar acidentes com base em localização e frequência.
+6. **Filtros Interativos**: Permite a filtragem dinâmica dos dados por diversos critérios.
 
 ## Pré-requisitos
 
@@ -31,11 +34,13 @@ Este projeto demonstra como criar uma aplicação web interativa para visualiza�
 3. Ative o ambiente virtual:
    - No Windows:
      ```bash
-     myenv\Scripts\activate
+     myenv\Scripts\activate # Para ativar
+     myenv\bin\deactivate # Para desativar
      ```
    - No macOS e Linux:
      ```bash
-     source myenv/bin/activate
+     source myenv/bin/activate # Para ativar
+     source myenv/bin/deactivate # Para desativar
      ```
 
 4. Instale as dependências:
@@ -56,12 +61,33 @@ Abra seu navegador e acesse `http://localhost:8501` para ver a aplicação em ex
 ## Estrutura do Projeto
 
 - `app.py`: O código principal da aplicação Streamlit
+- `preprocessing_data_including_geolocalization.py`: O código de préprocessamento do csv original para termos as coordenadas dos municipios
 - `requirements.txt`: Lista de dependências do projeto
+- `datasets/` diretório com os arquivos csv utilizados para visualização
+  - `acidentes_ferroviarios_12.2020-07.2024.csv` - base de dados de Dezembro de 2020 á Julho de 2024
+  - `acidentes_ferroviarios_2004_2020.csv` - base de dados de 2004 á Novembro de 2020
+  - `acidentes_ferroviarios_2004_2024.csv` - base de dados unificado dos casos de 2004 á Julho de 2024
 - `README.md`: Este arquivo
 
-## Contribuindo
+## Insights Potenciais
 
-Contribuições são bem-vindas! Por favor, sinta-se à vontade para submeter um Pull Request.
+Baseado no código, o projeto permite extrair os seguintes insights:
+
+1. **Distribuição Geográfica**: Identificar áreas de alta concentração de acidentes.
+2. **Padrões Temporais**: Analisar tendências de acidentes ao longo do tempo.
+3. **Análise por Concessionária**: Comparar o desempenho de segurança entre diferentes operadoras.
+4. **Causas Comuns**: Identificar as causas mais frequentes de acidentes.
+5. **Natureza dos Acidentes**: Entender os tipos mais comuns de incidentes.
+6. **Clusters de Risco**: Identificar regiões com características similares em termos de frequência de acidentes.
+7. **Impacto de Mercadorias**: Analisar se certos tipos de mercadorias estão associados a maiores riscos.
+8. **Variações Sazonais**: Investigar se há padrões sazonais nos acidentes.
+9. **Hotspots**: Identificar municípios ou linhas com frequência anormalmente alta de acidentes.
+
+## Notas Adicionais
+
+- Certifique-se de ter o arquivo CSV com os dados dos acidentes no diretório do projeto.
+- As visualizações são interativas, permitindo zoom, hover e seleção de dados.
+- O slider para escolha do número de clusters permite uma análise flexível da distribuição geográfica dos acidentes.
 
 ## Licença
 
