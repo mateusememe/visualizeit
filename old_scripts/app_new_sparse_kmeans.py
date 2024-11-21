@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
+
 import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler, LabelEncoder
@@ -79,6 +81,7 @@ def preprocess_features(df):
     return df_processed, features, scaler
 
 
+@st.cache_data
 def preprocess_for_kmeans(df):
     """Pré-processa dados para K-means regular."""
     df = df[
@@ -292,14 +295,110 @@ def create_accident_map(df):
 
 
 def create_bar_chart(df, x, y, title):
-    # Criar contagem de acidentes por concessionária
-    accidents_by_company = df[x].value_counts().reset_index()
-    accidents_by_company.columns = [x, "Número de Acidentes"]
+    # Create sum of financial losses by company
+    financial_by_company = df.groupby(x)["Prejuizo_Financeiro"].sum().reset_index()
+    financial_by_company.columns = [x, "Prejuízo Total"]
 
-    fig = px.bar(accidents_by_company, x=x, y="Número de Acidentes", title=title)
+    # Format the values to Brazilian currency
+    financial_by_company["Prejuízo Formatado"] = financial_by_company[
+        "Prejuízo Total"
+    ].apply(
+        lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    )
 
-    fig.update_layout(xaxis_title=x, yaxis_title="Número de Acidentes", bargap=0.2)
+    fig = px.bar(
+        financial_by_company,
+        x=x,
+        y="Prejuízo Total",
+        title=title,
+        text="Prejuízo Formatado",  # Show formatted values on bars
+    )
+
+    fig.update_layout(xaxis_title=x, yaxis_title="Prejuízo Financeiro (R$)", bargap=0.2)
+
+    # Update text position to be inside or outside bars depending on value
+    fig.update_traces(textposition="auto")
+
     return fig
+
+
+def create_concessionaria_analysis(df):
+    # Group data by Concessionaria
+    # df = df[
+    #     (df["Data_Ocorrencia"] >= "2020-12-01")
+    #     & (df["Data_Ocorrencia"] <= "2024-07-31")
+    # ]
+    print(df.shape)
+    grouped = (
+        df.groupby("Concessionaria")
+        .agg(
+            {
+                "Prejuizo_Financeiro": "sum",
+                "Interrupcao": "sum",
+                "Data_Ocorrencia": "count",
+            }
+        )
+        .reset_index()
+    )
+
+    # Store raw values before normalization
+    raw_values = grouped.copy()
+
+    # Create a numeric index for each Concessionaria for coloring
+    grouped["color_index"] = range(len(grouped))
+
+    # Create normalized values for stacked bar chart
+    for column in ["Prejuizo_Financeiro", "Interrupcao", "Data_Ocorrencia"]:
+        grouped[f"{column}_norm"] = grouped[column] / grouped[column].max()
+
+    # Create stacked bar chart
+    fig_stacked = px.bar(
+        grouped,
+        x="Concessionaria",
+        y=["Prejuizo_Financeiro_norm", "Interrupcao_norm", "Data_Ocorrencia_norm"],
+        title="Distribuição de Métricas por Concessionária (Normalizado)",
+        labels={
+            "value": "Valor Normalizado",
+            "variable": "Métrica",
+            "Concessionaria": "Concessionária",
+            "Prejuizo_Financeiro_norm": "Prejuízo Financeiro",
+            "Interrupcao_norm": "Tempo de Interrupção",
+            "Data_Ocorrencia_norm": "Número de Acidentes",
+        },
+        barmode="relative",
+    )
+
+    # Create summary table
+    summary = raw_values.copy()
+    summary["Prejuizo_Formatado"] = summary["Prejuizo_Financeiro"].apply(
+        lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    )
+    summary["Interrupcao_Formatada"] = summary["Interrupcao"].apply(
+        lambda x: f"{x:,.1f}h"
+    )
+    summary["N_Acidentes"] = summary["Data_Ocorrencia"]
+
+    # Calculate scores (lower is better)
+    summary["Score"] = (
+        grouped["Prejuizo_Financeiro_norm"]
+        + grouped["Interrupcao_norm"]
+        + grouped["Data_Ocorrencia_norm"]
+    ) / 3
+
+    summary = summary.sort_values("Score")
+
+    return (
+        fig_stacked,
+        summary[
+            [
+                "Concessionaria",
+                "Prejuizo_Formatado",
+                "Interrupcao_Formatada",
+                "N_Acidentes",
+                "Score",
+            ]
+        ],
+    )
 
 
 # Função principal
@@ -387,6 +486,33 @@ def main():
             "Distribuição de Acidentes por Concessionária",
         )
     )
+
+    st.header("Análise Comparativa de Concessionárias")
+
+    fig_stacked, summary = create_concessionaria_analysis(df_filtered)
+
+    # Show stacked bar chart with explanation
+    st.subheader("Distribuição Normalizada de Métricas")
+    st.markdown(
+        """
+    Este gráfico mostra a contribuição relativa de cada métrica normalizada:
+    - Valores normalizados permitem comparação justa entre métricas
+    - Altura total das barras indica impacto total
+    """
+    )
+    st.plotly_chart(fig_stacked, use_container_width=True)
+
+    # Show summary table with explanation
+    st.subheader("Resumo por Concessionária")
+    st.markdown(
+        """
+    Esta tabela apresenta um resumo com:
+    - Valores absolutos formatados
+    - Score composto (média das métricas normalizadas)
+    - Ordem do melhor para o pior desempenho geral
+    """
+    )
+    st.dataframe(summary.style.background_gradient(subset=["Score"], cmap="RdYlGn_r"))
 
 
 if __name__ == "__main__":
