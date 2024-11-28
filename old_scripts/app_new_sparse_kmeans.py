@@ -328,7 +328,7 @@ def create_concessionaria_analysis(df):
     #     (df["Data_Ocorrencia"] >= "2020-12-01")
     #     & (df["Data_Ocorrencia"] <= "2024-07-31")
     # ]
-    print(df.shape)
+
     grouped = (
         df.groupby("Concessionaria")
         .agg(
