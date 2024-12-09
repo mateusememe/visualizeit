@@ -3,15 +3,18 @@ import sys
 import os
 import chardet
 
+
 def detect_encoding(file_path):
-    with open(file_path, 'rb') as file:
+    with open(file_path, "rb") as file:
         raw_data = file.read()
-    return chardet.detect(raw_data)['encoding']
+    return chardet.detect(raw_data)["encoding"]
+
 
 def read_csv_with_encoding(file_path):
     encoding = detect_encoding(file_path)
     print(f"Detected encoding for {os.path.basename(file_path)}: {encoding}")
     return pd.read_csv(file_path, encoding=encoding, low_memory=False, sep=";")
+
 
 def merge_csvs(file1, file2, output_file):
     # Get the absolute paths of the files
@@ -39,10 +42,10 @@ def merge_csvs(file1, file2, output_file):
     common_columns = list(set(df1.columns) & set(df2.columns))
 
     # Merge dataframes on common columns
-    merged_df = pd.merge(df1, df2, on=common_columns, how='outer')
+    merged_df = pd.merge(df1, df2, on=common_columns, how="outer")
 
     # Save the merged dataframe in UTF-8 encoding
-    merged_df.to_csv(output_file, index=False, encoding='utf-8')
+    merged_df.to_csv(output_file, index=False, encoding="utf-8")
     print(f"Merged file saved as: {output_file} (UTF-8 encoding)")
 
     # Find non-matching columns
@@ -55,6 +58,7 @@ def merge_csvs(file1, file2, output_file):
             print(f"- {col} (present in {os.path.basename(file1)})")
         else:
             print(f"- {col} (present in {os.path.basename(file2)})")
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 4:

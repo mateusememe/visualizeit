@@ -1,3 +1,4 @@
+import logging
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -8,6 +9,7 @@ from typing import Dict, Optional
 from plotly.subplots import make_subplots
 
 
+from models.robust_sparse_kmeans import SparseKMeansResult
 from utils.data import (
     CategoricalClusteringResult,
     ClusteringResult,
@@ -558,7 +560,7 @@ class Visualizer:
 
             # Add cluster statistics
             centroids_df.loc[cluster, "size"] = mask.sum()
-            centroids_df.loc[cluster, "total_accidents"] = weight.sum()
+            centroids_df.loc[cluster, "total_acidentes"] = weight.sum()
 
             # Get top features for this cluster
             cluster_center = kmeans.cluster_centers_[cluster]
@@ -570,14 +572,14 @@ class Visualizer:
 
         min_size, max_size = 20, 100
         if (
-            centroids_df["total_accidents"].max()
-            != centroids_df["total_accidents"].min()
+            centroids_df["total_acidentes"].max()
+            != centroids_df["total_acidentes"].min()
         ):
             centroids_df["marker_size"] = (
-                centroids_df["total_accidents"] - centroids_df["total_accidents"].min()
+                centroids_df["total_acidentes"] - centroids_df["total_acidentes"].min()
             ) / (
-                centroids_df["total_accidents"].max()
-                - centroids_df["total_accidents"].min()
+                centroids_df["total_acidentes"].max()
+                - centroids_df["total_acidentes"].min()
             ) * (
                 max_size - min_size
             ) + min_size
@@ -591,7 +593,7 @@ class Visualizer:
             lon="Longitude",
             size="marker_size",
             color=centroids_df.index,
-            custom_data=["size", "total_accidents", "characteristic_features"],
+            custom_data=["size", "total_acidentes", "characteristic_features"],
             zoom=4,
             height=900,
             title="Centroides dos Clusters Categóricos (K-Means)",
@@ -841,3 +843,457 @@ class ClusteringAnalyzer:
                         cluster_analysis.loc[cluster, f"{feature} %"] = percentage
 
         return cluster_analysis
+
+
+class SparseKMeansVisualizer:
+    """Handles visualization for Sparse K-means clustering results."""
+
+    def __init__(
+        self,
+    ) -> None:
+        self.logger = logging.getLogger(__name__)
+
+    def create_sparse_cluster_map(
+        self,
+        df: pd.DataFrame,
+        result: SparseKMeansResult,
+        preprocess_data: ClusteringResult,
+        n_clusters: int,
+    ) -> go.Figure:
+        """Creates an interactive map visualization of sparse clustering results."""
+
+        try:
+            # Add cluster assignments to DataFrame
+            df_with_clusters = df.copy()
+            df_with_clusters["cluster"] = result.labels
+
+            # Calculate centroids
+            centroids_df = pd.DataFrame()
+            for cluster in range(n_clusters):
+                mask = df_with_clusters["cluster"] == cluster
+                weight = preprocess_data.original_values["num_acidentes"][mask]
+
+                centroids_df.loc[cluster, "Latitude"] = np.average(
+                    preprocess_data.original_values["Latitude"][mask], weights=weight
+                )
+                centroids_df.loc[cluster, "Longitude"] = np.average(
+                    preprocess_data.original_values["Longitude"][mask], weights=weight
+                )
+
+            # Calculate cluster statistics
+            cluster_stats = pd.DataFrame()
+
+            for cluster in range(n_clusters):
+                mask = df_with_clusters["cluster"] == cluster
+                cluster_stats.loc[cluster, "total_acidentes"] = (
+                    preprocess_data.original_values["num_acidentes"][mask].sum()
+                )
+                cluster_stats.loc[cluster, "total_interrupcao"] = (
+                    preprocess_data.original_values["Interrupcao"][mask].sum()
+                )
+                cluster_stats.loc[cluster, "prejuizo_total"] = (
+                    preprocess_data.original_values["Prejuizo_Financeiro"][mask].sum()
+                )
+                cluster_stats.loc[cluster, "principais_cidades"] = ", ".join(
+                    df.loc[mask, "Municipio"].head(3)
+                )
+
+            # Create DataFrame for visualization
+            centroids_df = centroids_df.join(cluster_stats)
+
+            min_size, max_size = 20, 100
+            if (
+                centroids_df["total_acidentes"].max()
+                != centroids_df["total_acidentes"].min()
+            ):
+                centroids_df["marker_size"] = (
+                    centroids_df["total_acidentes"]
+                    - centroids_df["total_acidentes"].min()
+                ) / (
+                    centroids_df["total_acidentes"].max()
+                    - centroids_df["total_acidentes"].min()
+                ) * (
+                    max_size - min_size
+                ) + min_size
+            else:
+                centroids_df["marker_size"] = min_size
+            # Format currency for hover display
+            centroids_df["prejuizo_hover"] = centroids_df["prejuizo_total"].apply(
+                lambda valor: f"R$ {valor:,.2f}".replace(",", "X")
+                .replace(".", ",")
+                .replace("X", ".")
+            )
+
+            map_figure = px.scatter_mapbox(
+                centroids_df,
+                lat="Latitude",
+                lon="Longitude",
+                size="marker_size",
+                color="total_interrupcao",
+                custom_data=[
+                    "prejuizo_hover",
+                    "principais_cidades",
+                    "total_acidentes",
+                    "prejuizo_total",
+                ],
+                zoom=4,
+                height=900,
+                title="Centroides dos Clusters (K-Means)",
+                color_continuous_scale=px.colors.sequential.Oranges[1:],
+                labels={
+                    "prejuizo_total": "Prejuízo Total (R$)",
+                    "total_interrupcao": "Tempo Total de Interrupção (horas)",
+                    "total_acidentes": "Total de Acidentes",
+                    "principais_cidades": "Principais Cidades",
+                },
+            ).update_layout(
+                mapbox_style="carto-darkmatter",
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+            )
+
+            # Update marker appearance
+            map_figure.update_traces(
+                marker=dict(
+                    sizemode="diameter",  # Use diameter mode for better size scaling
+                    sizeref=1,  # Adjust this value to change the overall size scale
+                    sizemin=min_size / 2,  # Minimum size to ensure visibility
+                ),
+                hovertemplate="<br>".join(
+                    [
+                        "Latitude: %{lat:.4f}",
+                        "Longitude: %{lon:.4f}",
+                        "Total de Acidentes: %{customdata[2]:,.0f}",
+                        "Tempo de Interrupção: %{marker.color:.1f} horas",
+                        "Prejuízo Total: %{customdata[0]}",
+                        "Principais Cidades: %{customdata[1]}",
+                        "<extra></extra>",
+                    ]
+                ),
+            )
+
+            map_figure.update_layout(
+                mapbox_style="carto-darkmatter",
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                title={"y": 0.98, "x": 0.5, "xanchor": "center", "yanchor": "top"},
+                mapbox=dict(
+                    zoom=4,
+                ),
+                annotations=[
+                    dict(
+                        x=0.02,
+                        y=0.98,
+                        xref="paper",
+                        yref="paper",
+                        text="<b>Legenda:</b><br>"
+                        + "• Tamanho dos círculos: Prejuízo financeiro total<br>"
+                        + "• Cor dos círculos: Tempo total de interrupção",
+                        showarrow=False,
+                        font=dict(size=12, color="white"),
+                        align="left",
+                        bgcolor="rgba(0,0,0,0.5)",
+                        bordercolor="white",
+                        borderwidth=1,
+                        borderpad=4,
+                        xanchor="left",
+                        yanchor="top",
+                    )
+                ],
+            )
+
+            return map_figure
+
+        except Exception as e:
+            self.logger.error("Error creating sparse cluster map", exc_info=True)
+            raise
+
+    def _calculate_cluster_centroids(
+        self, df: pd.DataFrame, result: SparseKMeansResult, lat_col: str, lon_col: str
+    ) -> pd.DataFrame:
+        """
+        Calculates cluster centroids and relevant statistics.
+        """
+        self.logger.debug("Calculating cluster centroids and statistics")
+
+        try:
+            # Add cluster assignments to DataFrame
+            df_with_clusters = df.copy()
+            df_with_clusters["cluster"] = result.labels
+
+            centroids_df = pd.DataFrame()
+            n_clusters = len(np.unique(result.labels))
+
+            for cluster in range(n_clusters):
+                cluster_data = df_with_clusters[df_with_clusters["cluster"] == cluster]
+
+                # Calculate weighted centroids based on accident counts
+                weights = (
+                    cluster_data["num_acidentes"]
+                    if "num_acidentes" in cluster_data.columns
+                    else None
+                )
+
+                centroids_df.loc[cluster, "Latitude"] = np.average(
+                    cluster_data[lat_col], weights=weights
+                )
+                centroids_df.loc[cluster, "Longitude"] = np.average(
+                    cluster_data[lon_col], weights=weights
+                )
+
+                # Calculate cluster statistics
+                centroids_df.loc[cluster, "size"] = len(cluster_data)
+                centroids_df.loc[cluster, "numero_cidades"] = cluster_data[
+                    "Municipio"
+                ].nunique()
+
+                # Calculate total accidents and financial impact
+                if "num_acidentes" in cluster_data.columns:
+                    centroids_df.loc[cluster, "total_acidentes"] = cluster_data[
+                        "num_acidentes"
+                    ].sum()
+                if "Prejuizo_Financeiro" in cluster_data.columns:
+                    centroids_df.loc[cluster, "prejuizo_total"] = cluster_data[
+                        "Prejuizo_Financeiro"
+                    ].sum()
+
+                # Get dominant features for this cluster
+                self._add_cluster_characteristics(
+                    centroids_df, cluster, result, cluster_data
+                )
+
+            return centroids_df
+
+        except Exception as e:
+            self.logger.error("Error calculating cluster centroids", exc_info=True)
+            raise
+
+    def _add_cluster_characteristics(
+        self,
+        centroids_df: pd.DataFrame,
+        cluster: int,
+        result: SparseKMeansResult,
+        cluster_data: pd.DataFrame,
+    ):
+        """
+        Adds characteristic features and their importance for each cluster.
+        """
+        try:
+            # Get top features for this cluster based on the sparse weights
+            cluster_center = result.centers[cluster]
+            important_features = []
+
+            for feat, weight in zip(result.selected_features, result.weights):
+                if weight > 0:  # Only consider features selected by sparse k-means
+                    feat_value = cluster_center[result.selected_features.index(feat)]
+                    important_features.append((feat, feat_value, weight))
+
+            # Sort by absolute feature value * weight to get most characteristic features
+            important_features.sort(key=lambda x: abs(x[1] * x[2]), reverse=True)
+
+            # Store top 3 characteristic features
+            top_features = important_features[:3]
+            feature_desc = []
+            for feat, value, weight in top_features:
+                direction = "high" if value > 0 else "low"
+                feature_desc.append(f"{feat} ({direction}, importance: {weight:.2f})")
+
+            centroids_df.loc[cluster, "characteristic_features"] = "<br>".join(
+                feature_desc
+            )
+
+        except Exception as e:
+            self.logger.warning(
+                f"Error adding characteristics for cluster {cluster}", exc_info=True
+            )
+
+    def _create_map_figure(self, centroids_df: pd.DataFrame) -> go.Figure:
+        """
+        Creates the final map visualization with all components.
+        """
+        self.logger.debug("Creating map figure with cluster visualization")
+
+        try:
+            # Scale marker sizes based on number of accidents
+            min_size, max_size = 20, 100
+            if "total_acidentes" in centroids_df.columns:
+                centroids_df["marker_size"] = self._scale_marker_sizes(
+                    centroids_df["total_acidentes"], min_size, max_size
+                )
+            else:
+                centroids_df["marker_size"] = min_size
+
+            # Create the map
+            map_figure = px.scatter_mapbox(
+                centroids_df,
+                lat="Latitude",
+                lon="Longitude",
+                size="marker_size",
+                color=centroids_df.index.astype(str),
+                custom_data=[
+                    "size",
+                    "numero_cidades",
+                    "total_acidentes",
+                    "prejuizo_total",
+                    "characteristic_features",
+                ],
+                zoom=4,
+                height=800,
+                title="Distribuição Geográfica dos Clusters (Sparse K-means)",
+            )
+
+            # Update layout and styling
+            map_figure.update_layout(
+                mapbox_style="carto-darkmatter",
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+            )
+
+            # Customize hover template
+            map_figure.update_traces(
+                hovertemplate=(
+                    "<b>Cluster %{customdata[0]}</b><br>"
+                    "Cidades: %{customdata[1]}<br>"
+                    "Total de Acidentes: %{customdata[2]}<br>"
+                    "Impacto Financeiro: R$ %{customdata[3]:,.2f}<br>"
+                    "<b>Características Principais:</b><br>"
+                    "%{customdata[4]}"
+                    "<extra></extra>"
+                )
+            )
+
+            return map_figure
+
+        except Exception as e:
+            self.logger.error("Error creating map figure", exc_info=True)
+            raise
+
+    @staticmethod
+    def _scale_marker_sizes(
+        values: pd.Series, min_size: float, max_size: float
+    ) -> pd.Series:
+        """
+        Scales values to marker sizes using a logarithmic scale.
+        """
+        if values.max() == values.min():
+            return pd.Series([min_size] * len(values))
+
+        scaled = np.log1p(values - values.min())
+        scaled = (scaled - scaled.min()) / (scaled.max() - scaled.min())
+        return scaled * (max_size - min_size) + min_size
+
+    def create_feature_importance_plot(self, result: SparseKMeansResult) -> go.Figure:
+        """
+        Creates an interactive bar plot of feature importance scores.
+        """
+        self.logger.debug("Creating feature importance visualization")
+
+        try:
+            # Sort features by importance
+            sorted_features = sorted(
+                result.feature_importance.items(), key=lambda x: x[1], reverse=True
+            )
+
+            features, importance = zip(*sorted_features)
+
+            # Create bar plot
+            fig = go.Figure(
+                [
+                    go.Bar(
+                        x=features,
+                        y=importance,
+                        marker_color="lightblue",
+                        hovertemplate=(
+                            "<b>%{x}</b><br>"
+                            "Importância: %{y:.3f}<br>"
+                            "<extra></extra>"
+                        ),
+                    )
+                ]
+            )
+
+            # Update layout
+            fig.update_layout(
+                title={
+                    "text": "Importância das Features no Sparse K-means",
+                    "y": 0.95,
+                    "x": 0.5,
+                    "xanchor": "center",
+                    "yanchor": "top",
+                },
+                xaxis_title="Features",
+                yaxis_title="Score de Importância",
+                showlegend=False,
+                xaxis_tickangle=45,
+                height=600,
+                margin=dict(t=100, b=100),
+                template="plotly_white",
+            )
+
+            # Add threshold line for selected features
+            if result.weights is not None and len(result.weights) > 0:
+                threshold = np.mean(result.weights) / 2
+                fig.add_hline(
+                    y=threshold,
+                    line_dash="dash",
+                    line_color="red",
+                    annotation_text="Limiar de Seleção",
+                    annotation_position="bottom right",
+                )
+
+            return fig
+
+        except Exception as e:
+            self.logger.error("Error creating feature importance plot", exc_info=True)
+            raise
+
+    def create_cluster_characteristics_table(
+        self, df: pd.DataFrame, result: SparseKMeansResult
+    ) -> pd.DataFrame:
+        """
+        Creates a detailed summary table of cluster characteristics.
+        """
+        self.logger.debug("Creating cluster characteristics summary")
+
+        try:
+            summary = pd.DataFrame()
+            df_with_clusters = df.copy()
+            df_with_clusters["Cluster"] = result.labels
+
+            for cluster in range(len(np.unique(result.labels))):
+                cluster_data = df_with_clusters[df_with_clusters["Cluster"] == cluster]
+
+                # Basic statistics
+                summary.loc[f"Cluster {cluster}", "Número de Cidades"] = cluster_data[
+                    "Municipio"
+                ].nunique()
+                summary.loc[f"Cluster {cluster}", "Total de Acidentes"] = len(
+                    cluster_data
+                )
+
+                # Financial impact
+                if "Prejuizo_Financeiro" in cluster_data.columns:
+                    total_loss = cluster_data["Prejuizo_Financeiro"].sum()
+                    summary.loc[f"Cluster {cluster}", "Prejuízo Total"] = (
+                        f"R$ {total_loss:,.2f}"
+                    )
+
+                # Top features
+                feature_desc = []
+                for feat in result.selected_features[:5]:  # Top 5 features
+                    if feat in cluster_data.columns:
+                        value = cluster_data[feat].mode().iloc[0]
+                        pct = (cluster_data[feat] == value).mean() * 100
+                        feature_desc.append(f"{feat}: {value} ({pct:.1f}%)")
+
+                summary.loc[f"Cluster {cluster}", "Características Principais"] = (
+                    "\n".join(feature_desc)
+                )
+
+            return summary
+
+        except Exception as e:
+            self.logger.error(
+                "Error creating cluster characteristics table", exc_info=True
+            )
+            raise

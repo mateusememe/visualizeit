@@ -5,10 +5,17 @@ import plotly.graph_objects as go
 from typing import Tuple, List
 import numpy as np
 from plotly.subplots import make_subplots
+import logging
+
+from models.robust_sparse_kmeans import RobustSparseKMeans
 
 
 class ClusterAnalyzer:
     """Handles cluster analysis and optimization."""
+
+    def __init__(self):
+        """Initialize ClusterAnalyzer with logger."""
+        self.logger = logging.getLogger(__name__)
 
     @staticmethod
     def calculate_clustering_metrics(
@@ -16,7 +23,7 @@ class ClusterAnalyzer:
         max_clusters: int = 25,
         min_clusters: int = 2,
         random_state: int = 42,
-    ) -> Tuple[List[float], List[float]]:
+    ) -> List[float]:
         """
         Calculates clustering metrics (inertia and silhouette score) for different numbers of clusters.
 
@@ -30,7 +37,7 @@ class ClusterAnalyzer:
             List[float]: List containing inertia
         """
         inertias = []
-        silhouette_scores = []
+
         n_clusters_range = range(min_clusters, max_clusters + 1)
 
         for n_clusters in n_clusters_range:
@@ -47,11 +54,11 @@ class ClusterAnalyzer:
         title: str = "Análise do Número Ideal de Clusters",
     ) -> go.Figure:
         """
-        Creates an interactive plot showing both inertia and silhouette scores.
+        Creates an interactive plot showing inertia scores.
 
         Args:
             inertias (List[float]): List of inertia values
-            silhouette_scores (List[float]): List of silhouette scores
+
             min_clusters (int): Minimum number of clusters tested
             title (str): Plot title
 
@@ -80,7 +87,6 @@ class ClusterAnalyzer:
             title=title,
             xaxis=dict(title="Número de Clusters", gridcolor="lightgray"),
             yaxis=dict(title="Inertia", gridcolor="lightgray"),
-            yaxis2=dict(title="Silhouette Score", overlaying="y", side="right"),
             hovermode="x unified",
             showlegend=True,
             legend=dict(yanchor="top", y=0.99, xanchor="right", x=0.99),
@@ -103,6 +109,8 @@ class TimePeriodAnalyzer:
             df (pd.DataFrame): Input DataFrame with Hora_Ocorrencia in HH:MM format
         """
         self.df = df.copy()
+        self.logger = logging.getLogger(__name__)
+
         # Define our time periods with their labels
         self.period_labels = {
             1: "00:00-06:00",
@@ -229,7 +237,6 @@ class TimePeriodAnalyzer:
                 for feat in categorical_features
             ],
             vertical_spacing=0.15,
-            # height=300 * len(categorical_features),
         )
 
         colors = [
@@ -428,3 +435,137 @@ class TimePeriodAnalyzer:
         )
 
         return fig
+
+
+class SparseClusterAnalyzer:
+    """
+    Analyzes optimal number of clusters for Robust Sparse K-means.
+    Includes elbow method analysis with feature importance consideration.
+    """
+
+    def __init__(self):
+        self.logger = logging.getLogger(__name__)
+
+    def analyze_optimal_clusters(
+        self,
+        X: np.ndarray,
+        feature_names: List[str],
+        max_clusters: int = 25,
+        min_clusters: int = 5,
+        lasso_param: float = 0.1,
+    ) -> Tuple[go.Figure, int]:
+        """
+        Analyzes optimal number of clusters with enhanced error checking.
+        """
+
+        try:
+            # Initialize metrics storage
+            inertias = []
+
+            # Calculate metrics for each cluster size
+            for n_clusters in range(min_clusters, max_clusters + 1):
+                try:
+                    model = RobustSparseKMeans(
+                        n_clusters=n_clusters, lasso_param=lasso_param, random_state=42
+                    )
+                    model.fit(X, feature_names)
+                    inertias.append(model.inertia_)
+
+                except Exception as cluster_error:
+                    self.logger.warning(
+                        f"Error testing {n_clusters} clusters: {str(cluster_error)}"
+                    )
+                    continue
+
+            # Create visualization
+            sparse_elbow_plot = self._create_elbow_plot(
+                inertias, min_clusters, feature_names
+            )
+
+            # Find optimal number of clusters
+            optimal_clusters = self._find_elbow_point(inertias, min_clusters)
+
+            return sparse_elbow_plot, optimal_clusters
+
+        except Exception as e:
+            self.logger.error(
+                f"Error in optimal cluster analysis: {str(e)}", exc_info=True
+            )
+            raise
+
+    def _create_elbow_plot(
+        self,
+        inertias: List[float],
+        min_clusters: int,
+        feature_names: List[str],
+    ) -> go.Figure:
+        """
+        Creates elbow plot with enhanced error handling and data validation.
+        """
+        try:
+            # Validate inputs
+            if not inertias:
+                raise ValueError("Empty metrics arrays")
+
+            n_clusters_range = list(range(min_clusters, min_clusters + len(inertias)))
+            total_features = len(feature_names)
+
+            # Create figure
+            fig = go.Figure()
+
+            # Add inertia trace with error handling
+            fig.add_trace(
+                go.Scatter(
+                    x=n_clusters_range,
+                    y=inertias,
+                    name="Inertia",
+                    mode="lines+markers",
+                    line=dict(color="blue"),
+                    yaxis="y",
+                )
+            )
+
+            # Update layout
+            fig.update_layout(
+                title="Análise do Número Ideal de Clusters (Sparse K-means)",
+                xaxis_title="Número de Clusters",
+                yaxis_title="Inertia",
+                yaxis2=dict(
+                    title="Número de Features",
+                    overlaying="y",
+                    side="right",
+                    range=[0, total_features],
+                ),
+                showlegend=True,
+            )
+
+            return fig
+
+        except Exception as e:
+            self.logger.error(f"Error creating elbow plot: {str(e)}", exc_info=True)
+            raise
+
+    def _find_elbow_point(self, inertias: List[float], min_clusters: int) -> int:
+        """
+        Finds the optimal number of clusters using both inertia and feature selection.
+
+        Args:
+            inertias: List of inertia values
+            feature_counts: List of selected feature counts
+            min_clusters: Minimum number of clusters tested
+
+        Returns:
+            Optimal number of clusters
+        """
+        # Calculate inertia angles
+        inertia_angles = []
+        for i in range(1, len(inertias) - 1):
+            angle = np.rad2deg(
+                np.arctan2(inertias[i - 1] - inertias[i], 1)
+                - np.arctan2(inertias[i] - inertias[i + 1], 1)
+            )
+            inertia_angles.append(angle)
+
+        optimal_clusters = inertia_angles.index(max(inertia_angles)) + min_clusters + 1
+
+        return optimal_clusters

@@ -1,7 +1,7 @@
 from typing import Tuple
 import pandas as pd
-import logging
 import numpy as np
+import logging
 
 
 class PerimeterProcessor:
@@ -12,6 +12,10 @@ class PerimeterProcessor:
     feature in railway accident data, converting various forms of perimeter
     information into a standardized binary format.
     """
+
+    def __init__(self):
+        """Initialize PerimeterProcessor with logger."""
+        self.logger = logging.getLogger(__name__)
 
     def analyze_perimeter_values(self, df: pd.DataFrame) -> Tuple[dict, pd.Series]:
         """
@@ -28,12 +32,10 @@ class PerimeterProcessor:
         unique_values = df["Perimetro_Urbano"].unique()
 
         # Log the analysis results
-        print(
-            f"Found {len(unique_values)} unique values in Perimetro_Urbano"
-        )
-        print("Value distribution:")
-        for value, count in value_counts.items():
-            print(f"  {value}: {count} occurrences")
+        # print(f"Found {len(unique_values)} unique values in Perimetro_Urbano")
+        # print("Value distribution:")
+        # for value, count in value_counts.items():
+        #     print(f"  {value}: {count} occurrences")
 
         return value_counts, unique_values
 
@@ -55,7 +57,7 @@ class PerimeterProcessor:
             df = df.copy()
 
         # Store original state for reporting
-        original_values = df["Perimetro_Urbano"].value_counts()
+        _ = df["Perimetro_Urbano"].value_counts()
 
         # Standardize values
         def standardize_value(value):
@@ -68,16 +70,10 @@ class PerimeterProcessor:
         df["Perimetro_Urbano"] = df["Perimetro_Urbano"].apply(standardize_value)
 
         # Log the changes
-        final_values = df["Perimetro_Urbano"].value_counts()
-        print("\nStandardization complete:")
-        print("\nOriginal value counts:")
-        print(original_values)
-        print("\nFinal value counts:")
-        print(final_values)
+        _ = df["Perimetro_Urbano"].value_counts()
 
         # Calculate and log the number of changes made
-        changes_made = (df["Perimetro_Urbano"] != df["Perimetro_Urbano"]).sum()
-        print(f"\nTotal changes made: {changes_made}")
+        _ = (df["Perimetro_Urbano"] != df["Perimetro_Urbano"]).sum()
 
         return df
 
@@ -95,7 +91,6 @@ class PerimeterProcessor:
             pd.DataFrame: Processed and validated DataFrame
         """
         # Initial analysis
-        print("Starting perimeter data processing...")
         _, _ = self.analyze_perimeter_values(df)
 
         # Standardize values
@@ -109,8 +104,4 @@ class PerimeterProcessor:
             )
             raise ValueError("Standardization resulted in unexpected values")
 
-        print("Processing completed successfully")
-        print(f"Final unique values: {final_unique}")
-
         return processed_df
-

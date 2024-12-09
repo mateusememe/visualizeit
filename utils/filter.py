@@ -1,5 +1,6 @@
 import streamlit as st
 from typing import Any, Dict
+import logging
 
 import pandas as pd
 
@@ -15,6 +16,7 @@ class SidebarFilters:
             df (pd.DataFrame): Input DataFrame for filter options.
         """
         self.df = df
+        self.logger = logging.getLogger(__name__)
 
     def get_filters(self) -> Dict[str, Any]:
         """
@@ -60,6 +62,10 @@ class SidebarFilters:
 
 class DataFilter:
     """Handles data filtering operations."""
+
+    def __init__(self):
+        """Initialize DataFilter with logger."""
+        self.logger = logging.getLogger(__name__)
 
     @staticmethod
     def apply_filters(df: pd.DataFrame, filters: Dict[str, Any]) -> pd.DataFrame:

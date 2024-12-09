@@ -5,7 +5,7 @@ from typing import Dict, List, NamedTuple, Tuple
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 import plotly.graph_objects as go
-
+import logging
 from utils.analyser import ClusterAnalyzer
 from utils.processor import PerimeterProcessor
 
@@ -75,6 +75,10 @@ class DataLoader:
 
 class DataProcessor:
     """Handles data processing and feature engineering."""
+
+    def __init__(self):
+        """Initialize DataProcessor with logger."""
+        self.logger = logging.getLogger(__name__)
 
     @staticmethod
     def preprocess_for_kmeans(df: pd.DataFrame) -> ClusteringResult:
@@ -238,7 +242,7 @@ class DataProcessor:
         data: pd.DataFrame,
         features: List[str],
         max_clusters: int = 25,
-        min_clusters: int = 2,
+        min_clusters: int = 5,
     ) -> Tuple[go.Figure, int]:
         """
         Analyzes and suggests optimal number of clusters.
@@ -258,9 +262,7 @@ class DataProcessor:
         )
 
         # Create visualization
-        elbow_plot = ClusterAnalyzer.create_elbow_plot(
-            inertias, min_clusters
-        )
+        elbow_plot = ClusterAnalyzer.create_elbow_plot(inertias, min_clusters)
 
         # Find optimal number of clusters using the elbow method
         # Calculate the angle of the elbow
