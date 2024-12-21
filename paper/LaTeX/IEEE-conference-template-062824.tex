@@ -1,0 +1,579 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+%Template version as of 6/27/2024
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\begin{document}
+
+\title{Análise Comparativa entre K-Means e Robust Sparse K-Means na Visualização de Padrões de Acidentes Ferroviários}
+
+\author{
+    \IEEEauthorblockN{Mateus Mendonça Monteiro\textsuperscript{1}}
+    \IEEEauthorblockA{
+        \textit{Departamento de Matemática e Computação},\\
+        \textit{Universidade Estadual Paulista}\\
+        Presidente Prudente, Brasil\\
+        mateus.monteiro@unesp.br
+    }
+}
+
+\maketitle
+
+\begin{abstract}
+Este trabalho apresenta uma análise comparativa entre as técnicas de clustering K-means tradicional e Robust Sparse K-means aplicadas à análise de acidentes ferroviários no Brasil, utilizando dados disponibilizados publicamente pela Agência Nacional de Transportes Terrestres (ANTT) através do portal Dados Abertos, compreendendo uma amostra do período entre 2004 e 2024. A pesquisa desenvolveu uma metodologia que combina técnicas robustas de clustering com visualizações geoespaciais interativas para identificar padrões nos acidentes ferroviários.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Visualização de Dados, K-Means, Robust Sparse K-Means, Análise de Acidentes Ferroviários, Clusterização, ANTT, Técnicas de Visualização
+\end{IEEEkeywords}
+
+\section{Introdução}
+\subsection{Contextualização do Problema}
+
+A Agência Nacional de Transportes Terrestres (ANTT) mantém registros detalhados destes acidentes através do Relatório de Acompanhamento de Acidentes Ferroviários (RAAF), gerando um volume considerável de dados que, embora rico em informações, apresenta desafios significativos para análise e interpretação. A complexidade destes dados deriva não apenas de seu volume, mas também da diversidade de variáveis envolvidas, incluindo causas diretas e contributivas, impactos financeiros, características operacionais e condições geográficas. Estudos recentes, como o trabalho de Meng et al. \cite{b6}, demonstram que a aplicação de técnicas avançadas de análise de dados pode fornecer insights valiosos sobre os fatores críticos relacionados a acidentes ferroviários, contribuindo significativamente para o desenvolvimento de mecanismos de alerta precoce e prevenção de ocorrências.
+
+\section{Trabalhos Relacionados}
+
+A análise de acidentes ferroviários tem sido objeto de diversos estudos que empregam técnicas avançadas de análise de dados. Meng et al. \cite{b6} propuseram uma abordagem baseada em ensemble learning para previsão de acidentes ferroviários, alcançando resultados significativos na identificação de fatores de risco críticos relacionados a descarrilamentos e colisões. Seu trabalho demonstrou a eficácia de técnicas de aprendizado de máquina na análise de dados ferroviários, obtendo métricas de desempenho expressivas (Accuracy: 0.879, Precision: 0.879, Recall: 0.883 e F1-score: 0.881).
+
+Nossa abordagem se diferencia ao focar na análise comparativa entre técnicas de clustering, especificamente o K-means tradicional e o Robust Sparse K-means, com ênfase na visualização geoespacial dos padrões de acidentes. Enquanto Meng et al. concentraram-se na previsão de acidentes, nosso trabalho busca identificar padrões espaciais e temporais que possam informar estratégias de prevenção e gestão de segurança.
+
+
+\subsection{Motivação}
+A motivação principal deste trabalho emerge do potencial em desenvolver metodologias avançadas para análise e compreensão de padrões em acidentes ferroviários, visando contribuir com as análises já realizadas pela ANTT. O estudo propõe complementar os métodos existentes através da integração de técnicas de clusterização robusta com visualizações geoespaciais interativas, oferecendo novas perspectivas para a análise de segurança ferroviária no Brasil.
+
+Esta abordagem metodológica pode complementar as ferramentas existentes da ANTT, fornecendo uma perspectiva adicional para estudos e análises de acidentes ferroviários pela agência.
+
+A escolha de combinar técnicas avançadas de clusterização com visualizações interativas é motivada pela necessidade de:
+\begin{itemize}
+\item Identificar padrões espaciais não evidentes em análises convencionais.
+\item Determinar automaticamente a relevância de diferentes variáveis na caracterização de acidentes.
+\item Facilitar a compreensão de padrões complexos através de visualizações interativas.
+\end{itemize}
+
+\subsection{Objetivos}
+O objetivo principal deste trabalho é desenvolver e avaliar uma abordagem comparativa entre o K-Means tradicional e o Robust Sparse K-Means para análise e visualização de padrões em acidentes ferroviários. Especificamente, buscamos:
+
+1. Implementar uma metodologia robusta para processamento e análise de dados de acidentes ferroviários, incluindo enriquecimento geográfico através de geocodificação.
+
+2. Desenvolver visualizações interativas que permitam a exploração efetiva de padrões espaciais em acidentes ferroviários.
+
+3. Comparar e avaliar a eficácia do K-Means tradicional e do Robust Sparse K-Means na identificação de padrões significativos.
+
+4. Propor métricas objetivas para avaliação da qualidade dos clusters e das visualizações resultantes.
+
+\subsection{Contribuições}
+Este trabalho apresenta as seguintes contribuições principais:
+
+1. \textbf{Metodológicas:}
+   - Desenvolvimento de uma abordagem integrada para análise de acidentes ferroviários.
+   - Adaptação do Robust Sparse K-Means para dados de transportes.
+   - Proposição de métricas específicas para avaliação de clusters em dados ferroviários.
+
+2. \textbf{Técnicas:}
+   - Implementação de um pipeline completo de processamento e análise.
+   - Desenvolvimento de visualizações interativas customizadas.
+   - Enriquecimento geográfico automatizado dos dados.
+
+3. \textbf{Práticas:}
+   - Identificação de padrões relevantes para segurança ferroviária.
+   - Geração de insights acionáveis para gestores.
+   - Criação de uma base metodológica para análises futuras.
+
+\section{Base de Dados}
+
+\subsection{Descrição dos Dados}
+Este trabalho utiliza dados provenientes do Relatório de Acompanhamento de Acidentes Ferroviários (RAAF) da Agência Nacional de Transportes Terrestres (ANTT). O conjunto de dados abrange um período de 20 anos, compreendendo registros de acidentes ferroviários ocorridos no Brasil entre 2004 e 2024. A base de dados encontra-se disponível publicamente através do Portal de Dados Abertos da ANTT \cite{b1}, demonstrando o compromisso da agência com a transparência e o acesso à informação.
+
+O conjunto completo apresenta uma estrutura multidimensional, incorporando 32 atributos que descrevem diferentes aspectos de cada ocorrência. Estes atributos podem ser categorizados em cinco dimensões principais: informações temporais, dados geográficos, características do acidente, aspectos operacionais e impactos resultantes.
+
+\subsection{Informações Temporais e Geográficas}
+As informações temporais são registradas com granularidade até o nível de hora, permitindo análises detalhadas de padrões temporais. Cada registro contém:
+
+\begin{itemize}
+\item Data da ocorrência (Data\_Ocorrencia): formato YYYY-MM-DD.
+\item Hora do acidente (Hora\_Ocorrencia): formato HH:MM.
+\item Período do dia: derivado da hora da ocorrência.
+\end{itemize}
+
+A localização geográfica é especificada através de múltiplos níveis de granularidade:
+\begin{itemize}
+\item Unidade Federativa (UF).
+\item Município.
+\item Linha férrea específica.
+\item Quilometragem inicial e final do trecho.
+\item Estações anterior e posterior ao local do acidente.
+\item Indicador de perímetro urbano.
+\end{itemize}
+
+\subsection{Características do Acidente}
+Cada ocorrência é caracterizada por um conjunto detalhado de atributos que descrevem a natureza e as circunstâncias do acidente:
+
+\begin{itemize}
+\item Gravidade do acidente.
+\item Causa direta: fator principal que ocasionou o acidente.
+\item Causa contributiva: fatores secundários que influenciaram a ocorrência.
+\item Natureza do acidente: classificação do tipo de ocorrência.
+\item Presença de passagem em nível (PN).
+\item Envolvimento de outras ferrovias.
+\end{itemize}
+
+\subsection{Aspectos Operacionais}
+Os dados operacionais fornecem contexto sobre as condições e características do serviço ferroviário no momento do acidente:
+
+\begin{itemize}
+\item Concessionária responsável.
+\item Serviço de transporte.
+\item Prefixo e número do trem.
+\item Tipo de carga transportada.
+\item Utilização de Double Stack.
+\item Equipagem envolvida.
+\end{itemize}
+
+\subsection{Impactos}
+O registro dos impactos abrange tanto aspectos humanos quanto operacionais e financeiros:
+
+\begin{itemize}
+\item Número de feridos.
+\item Número de óbitos.
+\item Tempo de interrupção da via.
+\item Prejuízo financeiro (em Reais).
+\end{itemize}
+
+\subsection{Limitações e Qualidade dos Dados}
+Apesar da riqueza de informações, o conjunto de dados apresenta algumas limitações importantes:
+
+\begin{itemize}
+\item Ausência de coordenadas geográficas precisas.
+\item Inconsistências no formato de registros temporais.
+\item Valores ausentes em campos críticos.
+\item Variações na padronização de nomenclaturas.
+\item Potencial subnotificação de acidentes menores.
+\end{itemize}
+
+\section{Pré-processamento e Enriquecimento dos Dados}
+
+\subsection{Unificação das Bases}
+O processo de unificação das bases temporais (2004-2020 e 2020-2024) exigiu um tratamento cuidadoso para garantir a consistência dos dados:
+
+\begin{enumerate}
+\item Harmonização de formatos entre as bases.
+\item Padronização de nomenclaturas e categorias.
+\item Verificação de consistência temporal.
+\end{enumerate}
+
+\subsection{Enriquecimento Geográfico}
+O enriquecimento geográfico foi realizado através de um processo automatizado utilizando a API Google Geocoding[b5]:
+
+\begin{enumerate}
+\item Construção de strings de localização combinando Município, UF e País.
+\item Requisições à API para obtenção de coordenadas.
+\item Validação das coordenadas retornadas.
+\item Armazenamento de latitude e longitude.
+\end{enumerate}\vspace{3cm}
+
+O processo de geocodificação seguiu o algoritmo:
+
+\begin{algorithm}
+\caption{Processo de Geocodificação}
+\begin{algorithmic}[1]
+\STATE Criar dicionário para armazenar coordenadas já conhecidas
+\FORALL{acidente na base de dados}
+    \IF{acidente já possui coordenadas}
+        \STATE Armazenar no dicionário
+        \STATE Continuar para próximo registro
+    \ENDIF
+    \IF{município já tem coordenadas no dicionário}
+        \STATE Usar coordenadas armazenadas
+    \ELSE
+        \STATE Buscar coordenadas na Google Geocoding API
+        \IF{coordenadas encontradas}
+            \STATE Salvar no registro atual
+            \STATE Armazenar no dicionário para uso futuro
+        \ENDIF
+        \STATE Aguardar brevemente antes da próxima busca
+    \ENDIF
+\ENDFOR
+\STATE Salvar base de dados enriquecida
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Tratamento de Dados}
+O tratamento de dados envolveu múltiplas etapas de limpeza e padronização:
+
+\begin{enumerate}
+\item \textbf{Padronização de Formatos}:
+   \begin{itemize}
+   \item Conversão de datas para formato ISO.
+   \item Normalização de valores monetários.
+   \item Padronização de coordenadas geográficas.
+   \end{itemize}
+
+\item \textbf{Tratamento de Valores Ausentes}:
+   \begin{itemize}
+   \item Imputação de valores faltantes.
+   \item Remoção de registros incompletos.
+   \item Documentação de decisões de tratamento.
+   \end{itemize}
+
+\item \textbf{Normalização de Variáveis}:
+   \begin{itemize}
+   \item Escalonamento de variáveis numéricas.
+   \item Codificação de variáveis categóricas.
+   \item Transformação de variáveis temporais.
+   \end{itemize}
+\end{enumerate}
+
+\section{Metodologia}
+
+\subsection{Visão Geral da Abordagem}
+Este trabalho propõe uma abordagem integrada para análise e visualização de padrões em acidentes ferroviários, combinando técnicas avançadas de clustering com visualizações interativas. A metodologia desenvolvida fundamenta-se em três pilares principais: análise espacial, identificação de padrões temporais e visualização interativa de dados.
+
+Nossa abordagem se diferencia das análises tradicionais ao incorporar técnicas robustas de clustering que consideram automaticamente a relevância das variáveis, permitindo uma compreensão mais profunda dos padrões de acidentes. 
+
+\subsection{Arquitetura do Sistema}
+
+\subsubsection{Componentes Principais}
+O sistema foi desenvolvido seguindo uma arquitetura modular, composta por quatro componentes principais :
+
+1. \textbf{Módulo de Processamento de Dados:}
+   - Responsável pela limpeza e preparação dos dados.
+   - Implementa o enriquecimento geográfico.
+   - Gerencia a normalização e transformação de variáveis.
+
+2. \textbf{Módulo de Análise:}
+   - Implementa os algoritmos de clustering.
+   - Executa análises estatísticas.
+   - Calcula métricas de avaliação.
+
+3. \textbf{Módulo de Visualização:}
+   - Gera visualizações interativas.
+   - Gerencia a interação com usuário.
+   - Implementa diferentes tipos de gráficos e mapas.
+
+4. \textbf{Interface do Usuário:}
+   - Desenvolvida com Streamlit.
+   - Fornece controles interativos.
+   - Apresenta resultados dinâmicos.
+
+\subsubsection{Fluxo de Processamento}
+O fluxo de processamento segue uma sequência lógica de operações:
+
+1. \textbf{Ingestão de Dados:}
+\begin{equation}
+D_{raw} \xrightarrow{\text{leitura}} D_{input}
+\end{equation}
+
+2. \textbf{Pré-processamento:}
+\begin{equation}
+D_{input} \xrightarrow{\text{normalização}} D_{processed}
+\end{equation}
+
+3. \textbf{Análise:}
+\begin{equation}
+D_{processed} \xrightarrow{\text{clustering}} D_{analyzed}
+\end{equation}
+
+4. \textbf{Visualização:}
+\begin{equation}
+D_{analyzed} \xrightarrow{\text{renderização}} V_{output}
+\end{equation}
+
+\subsubsection{Tecnologias Utilizadas}
+O sistema foi implementado utilizando um conjunto moderno de tecnologias de código aberto:
+
+\begin{itemize}
+\item Python 3.10 como linguagem principal.
+\item Pandas para manipulação de dados.
+\item Scikit-learn para implementação dos algoritmos.
+\item Plotly para visualizações interativas.
+\item Streamlit para interface web.
+\end{itemize}
+
+\subsection{Técnicas de Clustering}
+
+\subsubsection{K-Means Tradicional}
+O algoritmo K-means tradicional \cite{b3} é implementado como baseline para comparação, seguindo a formulação clássica:
+
+\begin{equation}
+\min_{\{C_k\}_{k=1}^K} \sum_{k=1}^K \sum_{x_i \in C_k} ||x_i - \mu_k||^2
+\end{equation}
+
+onde $C_k$ representa o k-ésimo cluster e $\mu_k$ seu centróide.
+
+\subsubsection{Determinação do Número Ótimo de Clusters}
+O número ótimo de clusters é determinado através do método do cotovelo \cite{b4}, analisando a variação da inércia:
+
+\begin{equation}
+\text{Inertia}(k) = \sum_{i=1}^n \min_{\mu_j \in C} ||x_i - \mu_j||^2
+\end{equation}
+
+O ponto de inflexão na curva de inércia indica o número ideal de clusters.
+
+\subsubsection{Robust Sparse K-Means com LASSO}
+O Robust Sparse K-means \cite{b2} incorpora regularização LASSO para seleção automática de características:
+
+\begin{equation}
+\min_{\{C_k\}_{k=1}^K, w} \sum_{k=1}^K \sum_{x_i \in C_k} \sum_{j=1}^p w_j||x_{ij} - \mu_{kj}||^2 + \lambda||w||_1
+\end{equation}
+
+sujeito a:
+\begin{equation}
+\sum_{j=1}^p w_j = 1, w_j \geq 0
+\end{equation}
+
+\section{Sistema de Visualização e Análise}
+
+O desenvolvimento deste trabalho resultou em um sistema interativo completo de visualização e análise de acidentes ferroviários, implementado utilizando Streamlit e Python. O sistema integra múltiplas perspectivas de análise, permitindo uma compreensão abrangente dos padrões de acidentes.
+
+\subsection{Interface e Funcionalidades}
+
+A interface do sistema foi projetada para facilitar a exploração interativa dos dados, oferecendo diferentes níveis de análise:
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.9\linewidth]{sistema_interface.png}
+    \caption{Interface principal do sistema de visualização, mostrando os controles interativos e o painel de visualização principal. Os filtros laterais permitem a seleção dinâmica de períodos, concessionárias e outras variáveis de interesse.}
+    \label{fig:sistema_interface}
+\end{figure}
+
+\subsection{Análise por Concessionária}
+
+O sistema permite análise detalhada por concessionária ferroviária, revelando padrões específicos de cada operadora como pode se ver na figura \ref{fig:analise_concessionaria}:
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.8\linewidth]{analise_concessionaria.png}
+    \caption{Visualização comparativa entre concessionárias, mostrando métricas normalizadas de prejuízo financeiro, tempo de interrupção e número de acidentes. Note-se os padrões distintos entre operadoras.}
+    \label{fig:analise_concessionaria}
+\end{figure}
+
+\subsection{Análise Temporal}
+
+A dimensão temporal dos acidentes é explorada através de visualizações específicas demonstradas nas figuras \ref{fig:analise_temporal} e \ref{}:
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.8\linewidth]{analise_temporal.png}
+    \caption{Distribuição temporal dos acidentes mostrando padrões horários e sazonais. Os gráficos de calor evidenciam concentrações de ocorrências em períodos específicos do dia e do ano.}
+    \label{fig:analise_temporal}
+\end{figure}
+
+E também por meio de heatmaps relacionando as características Perimetro Urbano, Causa Direta e Natureza conforme demonstrado nas figuras \ref{fig:periodo_causa_direta}, \ref{fig:periodo_perimetro_urbano} e \ref{fig:periodo_natureza} respectivamente:
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.9\linewidth]{periodo_causa_direta.png}
+    \caption{Distribuição de Causa Direta por Período do Dia}
+    \label{fig:periodo_causa_direta}
+\end{figure}
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.95\linewidth]{periodo_perimetro_urbano.png}
+    \caption{Distribuição de Perimetro Urbano por Período do Dia}
+    \label{fig:periodo_perimetro_urbano}
+\end{figure}
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.95\linewidth]{periodo_natureza.png}
+    \caption{Distribuição de Naturaza por Período do Dia}
+    \label{fig:periodo_natureza}
+\end{figure}
+
+\section{Resultados}
+
+\subsection{Análise Espacial}
+
+\subsubsection{Distribuição Geográfica}
+A análise da distribuição espacial dos acidentes ferroviários revela padrões significativos de concentração em determinadas regiões do Brasil. Através da visualização geoespacial interativa, foi possível identificar que a maior concentração de acidentes foi na região sudeste e sul do Brasil como demonstra na figura \ref{fig:accident_map}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.99\linewidth]{accident_map.png}
+    \caption{Mapa geográfico mostrando a distribuição geoespacial dos acidentes ferroviários no Brasil (2004-2024). A intensidade da cor indica a concentração de acidentes, com áreas mais escuras representando maior número de ocorrências.}
+    \label{fig:accident_map}
+\end{figure}
+
+
+\subsubsection{Padrões Regionais}
+Os resultados demonstram uma concentração significativa de acidentes em corredores ferroviários específicos, particularmente em regiões com intensa atividade de transporte de carga. A análise comparativa entre as técnicas de clustering revela padrões distintos de agrupamento, como mostrado nas Figuras \ref{fig:cluster_map} e \ref{fig:robust_sparse_kmeans}.
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.99\linewidth]{kmeans_clustering.png}
+    \caption{Visualização dos clusters geográficos identificados pelo K-Means tradicional. Cada ponto representa um centróide distinto, com o tamanho dos círculos proporcional ao prejuízo financeiro total e a intensidade da cor referente ao tempo de interrupção total.}
+    \label{fig:cluster_map}
+\end{figure}
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.99\linewidth]{robust_sparse_kmeans.png}
+    \caption{Visualização dos clusters geográficos identificados pelo Robust Sparse K-Means. Cada ponto representa um centróide distinto, com o tamanho dos círculos proporcional ao prejuízo financeiro total e a intensidade da cor referente ao tempo de interrupção total. Note-se a redução significativa na influência de outliers quando comparado à Figura \ref{fig:cluster_map}.}
+    \label{fig:robust_sparse_kmeans}
+\end{figure}
+
+A análise dos padrões regionais revela quatro aspectos principais:
+
+\begin{enumerate}
+    \item \textbf{Concentração Geográfica:} Os clusters identificados mostram uma forte concentração de acidentes ao longo dos principais corredores logísticos, especialmente nas regiões Sudeste e Sul do país.
+    
+    \item \textbf{Impacto Financeiro:} Os círculos de maior diâmetro, indicando maiores prejuízos financeiros, tendem a se concentrar em áreas de alta densidade operacional, sugerindo uma correlação entre volume de tráfego e magnitude dos impactos.
+    
+    \item \textbf{Tempo de Interrupção:} A intensidade da cor nos mapas revela que as regiões com maiores tempos de interrupção nem sempre coincidem com as áreas de maior prejuízo financeiro, indicando variações na eficiência dos processos de recuperação operacional.
+    
+    \item \textbf{Tratamento de Outliers:} Comparando as Figuras \ref{fig:cluster_map} e \ref{fig:robust_sparse_kmeans}, é notável a diferença no tratamento de valores atípicos. O Robust Sparse K-Means demonstra maior robustez ao reduzir significativamente a influência de outliers na formação dos clusters, resultando em uma representação mais coesa dos padrões regionais. Esta característica é particularmente evidente nas regiões periféricas, onde acidentes isolados ou eventos extremos têm menor impacto na definição dos centróides, proporcionando uma visão mais realista da distribuição típica dos acidentes.
+\end{enumerate}
+
+A robustez a outliers demonstrada pelo Robust Sparse K-Means é especialmente relevante no contexto de acidentes ferroviários, onde eventos extremos, embora importantes para análises específicas, podem distorcer a compreensão dos padrões gerais de ocorrências quando considerados com peso igual aos eventos mais frequentes.
+
+\subsection{Análise Comparativa}
+
+\subsubsection{Métricas de Qualidade dos Clusters}
+A comparação entre K-Means tradicional e Robust Sparse K-Means revelou diferenças significativas na qualidade dos agrupamentos como podemos ver nas figuras \ref{fig:elbow-plot-kmeans} e \ref{fig:elbow-plot-sparse-kmeans}.
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.9\linewidth]{elbow-plot-kmeans.png}
+    \caption{Gráfico do método do cotovelo mostrando a variação da inércia em função do número de clusters para o K-Means tradicional}
+    \label{fig:elbow-plot-kmeans}
+\end{figure}
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.8\linewidth]{elbow-plot-sparse.png}
+    \caption{Gráfico do método do cotovelo mostrando a variação da inércia em função do número de clusters para o Robust Sparse K-Means
+    \ref{fig:elbow-plot-kmeans}.}
+    \label{fig:elbow-plot-sparse-kmeans}
+\end{figure}
+
+
+\subsection{Seleção de Características}
+
+\subsubsection{Características Relevantes}
+O Robust Sparse K-Means identificou automaticamente as características mais relevantes para a formação dos clusters através de sua capacidade de atribuir pesos às variáveis durante o processo de clustering. A Tabela \ref{tab:feature_scores} apresenta os scores de importância de cada característica, demonstrando que o prejuízo financeiro exerce influência dominante na formação dos agrupamentos, com um score de 0.813, seguido pelo tempo de interrupção (0.442) e número de acidentes (0.380).
+
+\begin{table}[!htb]
+\centering
+\begin{tabular}{|l|c|}
+\hline
+\textbf{Característica} & \textbf{Score de Importância} \\
+\hline
+Prejuízo Financeiro & 0.813 \\
+Interrupção & 0.442 \\
+Número de Acidentes & 0.380 \\
+\hline
+\end{tabular}
+\caption{Scores de importância das características identificadas pelo Robust Sparse K-Means. Os valores são normalizados e refletem a contribuição relativa de cada variável para a formação dos clusters.}
+\label{tab:feature_scores}
+\end{table}
+
+\subsubsection{Impacto na Análise}
+A seleção automática de características proporcionou uma redução significativa na dimensionalidade dos dados sem perda significativa de informação. A análise dos scores de importância revela aspectos fundamentais sobre os padrões de acidentes ferroviários:
+
+\begin{itemize}
+
+\item O prejuízo financeiro emerge como a característica mais influente, com um score de 0.813, indicando que este fator é preponderante na diferenciação entre clusters. Esta dominância sugere que o impacto econômico dos acidentes é um indicador mais robusto para a identificação de padrões do que a frequência dos eventos em si.
+
+\item O tempo de interrupção apresenta um score intermediário de 0.442, demonstrando sua relevância secundária na formação dos clusters. Este resultado é particularmente interessante pois indica que, embora significativo, o tempo de paralisação operacional não está necessariamente correlacionado de forma linear com o prejuízo financeiro.
+
+\item O número de acidentes, com score de 0.380, apresenta a menor influência entre as características analisadas. Este resultado sugere que a quantidade absoluta de ocorrências pode ser menos importante para a compreensão dos padrões de acidentes do que a severidade de seus impactos econômicos e operacionais.
+
+\end{itemize}
+
+Esta hierarquização automática das características fornece insights valiosos para a gestão da segurança ferroviária, sugerindo que estratégias de prevenção e mitigação devem priorizar a redução do impacto financeiro dos acidentes, além de simplesmente buscar a redução de sua frequência.
+
+    
+\section{Discussão}
+
+\subsection{Robustez Estatística}
+A análise comparativa entre K-means tradicional e Robust Sparse K-means revelou diferenças significativas na capacidade de lidar com outliers e na estabilidade dos clusters formados. Um caso particularmente ilustrativo foi identificado nos registros da concessionária EFC (Estrada de Ferro Carajás), onde valores atípicos de prejuízos financeiros influenciaram significativamente a formação dos clusters no K-means tradicional.
+
+O Robust Sparse K-means demonstrou superior robustez estatística através de três aspectos principais:
+
+1. \textbf{Tratamento de Outliers:} Enquanto o K-means tradicional mostrou-se sensível aos registros extremos da EFC, distorcendo a formação dos clusters nas regiões próximas, o Robust Sparse K-means manteve uma distribuição mais equilibrada dos centróides, preservando a representatividade dos padrões regionais típicos.
+
+2. \textbf{Estabilidade dos Clusters:} A incorporação da regularização LASSO resultou em agrupamentos mais estáveis, menos suscetíveis a variações nos valores extremos. Esta característica é particularmente relevante para análise de acidentes ferroviários, onde eventos extraordinários não devem obscurecer padrões operacionais regulares.
+
+3. \textbf{Consistência nas Métricas:} A variação da inércia em função do número de clusters apresentou um comportamento mais suave no Robust Sparse K-means, facilitando a identificação do número ótimo de clusters através do método do cotovelo.
+
+\subsection{Interpretabilidade}
+A superioridade do Robust Sparse K-means em termos de interpretabilidade manifesta-se em múltiplos níveis:
+
+1. \textbf{Seleção Automática de características:} A atribuição de pesos às variáveis (scores de 0.813 para prejuízo financeiro, 0.442 para interrupção e 0.380 para número de acidentes) fornece uma hierarquia clara de importância, facilitando a compreensão dos fatores mais relevantes na caracterização dos acidentes.
+
+2. \textbf{Visualização Geoespacial:} A representação visual através do scatterplot geolocalizado permite uma interpretação intuitiva dos padrões espaciais, com a vantagem adicional de que o Robust Sparse K-means produz centroides mais representativos dos padrões típicos de cada região.
+
+3. \textbf{Dimensionalidade Efetiva:} A redução automática da influência de variáveis menos relevantes simplifica a interpretação dos resultados, mantendo apenas as dimensões que efetivamente contribuem para a diferenciação entre clusters.
+
+\subsection{Implicações Práticas}
+A aplicação desta metodologia tem implicações significativas para a gestão da segurança ferroviária:
+
+1. \textbf{Identificação de Prioridades:} A hierarquização das variáveis pelo Robust Sparse K-means demonstrou uma identificação mais precisa e confiável dos padrões nos dados em comparação ao K-means tradicional, especialmente ao lidar com valores atípicos e características complexas dos acidentes. Esta superioridade metodológica permitiu uma compreensão mais profunda das diferentes variáveis que caracterizam os acidentes ferroviários, oferecendo uma base mais sólida para o desenvolvimento de estratégias de segurança ferroviária.
+
+2. \textbf{Gestão de Risco:} A capacidade de identificar padrões robustos, mesmo na presença de eventos extremos como os da EFC, permite uma avaliação mais precisa dos riscos típicos em diferentes regiões.
+
+3. \textbf{Alocação de Recursos:} A visualização geoespacial dos clusters, combinada com os pesos das variáveis, fornece uma base objetiva para decisões sobre alocação de recursos de prevenção e resposta a acidentes.
+
+\subsection{Comparação com Trabalhos Anteriores}
+Nossa abordagem se diferencia e avança em relação a trabalhos anteriores em três aspectos principais:
+
+1. \textbf{Integração de Técnicas:} A combinação de Robust Sparse K-means com visualização geoespacial oferece uma perspectiva mais completa que abordagens tradicionais de análise de acidentes ferroviários.
+
+2. \textbf{Tratamento de Outliers:} A capacidade demonstrada de lidar com valores extremos, como os da EFC, representa um avanço significativo em relação a análises anteriores que frequentemente excluíam ou suavizavam estes casos.
+
+3. \textbf{Interpretabilidade Aumentada:} A seleção automática de características e visualização integrada proporcionam maior facilidade de interpretação que métodos anteriores.
+
+\section{Limitações e Desafios}
+
+\subsection{Limitações dos Dados}
+Apesar dos resultados positivos, algumas limitações importantes foram identificadas:
+
+1. \textbf{Qualidade dos Dados:}
+   - Inconsistências nos registros históricos.
+   - Variações na precisão do georreferenciamento.
+   - Possível subnotificação de acidentes menores.
+
+2. \textbf{Granularidade Temporal:}
+   - Limitações na análise de padrões sazonais.
+   - Ausência de timestamps precisos para alguns registros.
+
+\subsection{Desafios Computacionais}
+A implementação enfrentou desafios específicos:
+
+1. \textbf{Processamento Geoespacial:}
+   - Necessidade de otimização para geocodificação em larga escala.
+   - Limitações das APIs de geolocalização.
+   - Gestão de requisições à API do Google Maps.
+
+2. \textbf{Complexidade Algorítmica:}
+   - Maior custo computacional do Robust Sparse K-means.
+   - Necessidade de otimização para datasets maiores.
+
+\section{Conclusão}
+
+A análise comparativa entre o K-means tradicional e o Robust Sparse K-means na investigação de acidentes ferroviários demonstrou significativas vantagens da abordagem robusta na identificação de padrões. Esta superioridade foi particularmente evidenciada no tratamento dos registros da Estrada de Ferro Carajás (EFC), onde o método robusto manteve sua consistência analítica mesmo na presença de valores atípicos significativos. O Robust Sparse K-means proporcionou uma compreensão mais precisa dos padrões de acidentes através da identificação automática das variáveis mais relevantes para a formação dos clusters, permitindo uma análise mais aprofundada das características que influenciam a segurança ferroviária.
+
+A integração desta técnica com visualizações geoespaciais estabeleceu um framework metodológico reprodutível e robusto, representando um avanço significativo na análise de dados de transportes. A metodologia desenvolvida revelou padrões anteriormente não evidentes nos dados da ANTT, contribuindo para uma compreensão mais abrangente dos múltiplos fatores que caracterizam os acidentes ferroviários. Este trabalho não apenas valida a eficácia do Robust Sparse K-means no contexto ferroviário, mas também estabelece uma base metodológica sólida que pode auxiliar no desenvolvimento de estratégias mais efetivas para a prevenção de acidentes e aprimoramento da segurança ferroviária no Brasil.
+
+\renewcommand{\refname}{Referências}
+\begin{thebibliography}{00}
+\bibitem{b1} ANTT, ``Relatório de Acompanhamento de Acidentes Ferroviários (RAAF),'' Agência Nacional de Transportes Terrestres, 2024. [Online]. Disponível: https://dados.antt.gov.br/dataset/relatorio-de-acompanhamento-de-acidentes-ferroviarios-raaf
+\bibitem{b2} S. Brodinova, P. Filzmoser, T. Ortner, C. Breiteneder, and M. Zaharieva, ``Robust and sparse k-means clustering for high-dimensional data,'' arXiv:1709.10012 [stat.ME], Sep. 2017. [Online]. Available: https://arxiv.org/abs/1709.10012
+\bibitem{b3} J. MacQueen, ``Some methods for classification and analysis of multivariate observations,'' in Proc. 5th Berkeley Symp. Math. Stat. Probab., Oakland, CA, USA, 1967, vol. 1, no. 14, pp. 281-297.
+\bibitem{b4} R. L. Thorndike, ``Who belongs in the family?,'' Psychometrika, vol. 18, no. 4, pp. 267-276, Dec. 1953, doi: 10.1007/BF02289263. [Online]. Disponível: https://doi.org/10.1007/BF02289263
+\bibitem{b5} Google Developers, ``Geocoding API Overview,'' Google Maps Platform Documentation, 2024. [Online]. Disponível: https://developers.google.com/maps/documentation/geocoding
+\bibitem{b6} H. Meng et al., ``Railway accident prediction strategy based on ensemble learning,'' Accident Analysis \& Prevention, vol. 176, pp. 106817, 2022, doi: 10.1016/j.aap.2022.106817. [Online]. Available: https://www.sciencedirect.com/science/article/pii/S0001457522002524
+\end{thebibliography}
+
+\end{document}
+    
