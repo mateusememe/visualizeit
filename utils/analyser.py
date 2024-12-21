@@ -537,6 +537,7 @@ class SparseClusterAnalyzer:
                     range=[0, total_features],
                 ),
                 showlegend=True,
+                plot_bgcolor="white",
             )
 
             return fig

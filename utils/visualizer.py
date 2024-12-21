@@ -143,7 +143,7 @@ class Visualizer:
             zoom=4,
             height=900,
             title="Centroides dos Clusters (K-Means)",
-            color_continuous_scale=px.colors.sequential.Oranges[1:],
+            color_continuous_scale=px.colors.sequential.Redor[1:],
             labels={
                 "prejuizo_total": "Prejuízo Total (R$)",
                 "total_interrupcao": "Tempo Total de Interrupção (horas)",
@@ -151,7 +151,7 @@ class Visualizer:
                 "principais_cidades": "Principais Cidades",
             },
         ).update_layout(
-            mapbox_style="carto-darkmatter",
+            mapbox_style="open-street-map",
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
         )
@@ -177,7 +177,7 @@ class Visualizer:
         )
 
         map_figure.update_layout(
-            mapbox_style="carto-darkmatter",
+            mapbox_style="open-street-map",
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
             title={"y": 0.98, "x": 0.5, "xanchor": "center", "yanchor": "top"},
@@ -597,11 +597,11 @@ class Visualizer:
             zoom=4,
             height=900,
             title="Centroides dos Clusters Categóricos (K-Means)",
-            color_continuous_scale=px.colors.sequential.Oranges[1:],
+            color_continuous_scale=px.colors.sequential.Redor[1:],
         )
 
         map_figure.update_layout(
-            mapbox_style="carto-darkmatter",
+            mapbox_style="open-street-map",
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
         )
@@ -770,7 +770,7 @@ class ClusteringAnalyzer:
         # Configurar o layout do mapa para melhor visualização
         fig.update_layout(
             mapbox=dict(
-                style="carto-darkmatter",
+                style="open-street-map",  # White theme map
                 center=dict(
                     # Centralizar no Brasil usando coordenadas médias
                     lat=-15.77,  # Latitude central do Brasil
@@ -939,7 +939,7 @@ class SparseKMeansVisualizer:
                 zoom=4,
                 height=900,
                 title="Centroides dos Clusters (K-Means)",
-                color_continuous_scale=px.colors.sequential.Oranges[1:],
+                color_continuous_scale=px.colors.sequential.Redor[1:],
                 labels={
                     "prejuizo_total": "Prejuízo Total (R$)",
                     "total_interrupcao": "Tempo Total de Interrupção (horas)",
@@ -947,7 +947,7 @@ class SparseKMeansVisualizer:
                     "principais_cidades": "Principais Cidades",
                 },
             ).update_layout(
-                mapbox_style="carto-darkmatter",
+                mapbox_style="open-street-map",
                 paper_bgcolor="rgba(0,0,0,0)",
                 plot_bgcolor="rgba(0,0,0,0)",
             )
@@ -973,7 +973,7 @@ class SparseKMeansVisualizer:
             )
 
             map_figure.update_layout(
-                mapbox_style="carto-darkmatter",
+                mapbox_style="open-street-map",
                 paper_bgcolor="rgba(0,0,0,0)",
                 plot_bgcolor="rgba(0,0,0,0)",
                 title={"y": 0.98, "x": 0.5, "xanchor": "center", "yanchor": "top"},
@@ -1144,7 +1144,7 @@ class SparseKMeansVisualizer:
 
             # Update layout and styling
             map_figure.update_layout(
-                mapbox_style="carto-darkmatter",
+                mapbox_style="open-street-map",
                 paper_bgcolor="rgba(0,0,0,0)",
                 plot_bgcolor="rgba(0,0,0,0)",
             )

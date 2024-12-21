@@ -265,50 +265,51 @@ class Main:
             except Exception as e:
                 st.error(f"Erro na análise de clusters esparsos: {str(e)}")
                 logging.error("Error in sparse clustering analysis", exc_info=True)
-                with time_analysis:
-                    st.header("Análise Temporal de Acidentes")
 
-                    # Initialize time analyzer
-                    time_analyzer = TimePeriodAnalyzer(df_filtered)
+        with time_analysis:
+            st.header("Análise Temporal de Acidentes")
 
-                    # Show hourly distribution
-                    hourly_dist = time_analyzer.create_hourly_distribution()
-                    st.plotly_chart(hourly_dist, use_container_width=True)
+            # Initialize time analyzer
+            time_analyzer = TimePeriodAnalyzer(df_filtered)
 
-                    # Show time patterns summary
-                    st.subheader("Resumo por Período")
-                    time_patterns = time_analyzer.analyze_time_patterns()
-                    st.dataframe(
-                        time_patterns.style.format(
-                            {
-                                "Número de Acidentes": "{:,.0f}",
-                                "Porcentagem do Total": "{:.1f}%",
-                            }
-                        )
-                    )
+            # Show hourly distribution
+            hourly_dist = time_analyzer.create_hourly_distribution()
+            st.plotly_chart(hourly_dist, use_container_width=True)
 
-                    # Show improved categorical analysis using heatmaps
-                    st.subheader("Distribuição de Categorias por Período")
-                    time_categories = time_analyzer.create_category_time_heatmaps()
-                    st.plotly_chart(time_categories, use_container_width=True)
+            # Show time patterns summary
+            st.subheader("Resumo por Período")
+            time_patterns = time_analyzer.analyze_time_patterns()
+            st.dataframe(
+                time_patterns.style.format(
+                    {
+                        "Número de Acidentes": "{:,.0f}",
+                        "Porcentagem do Total": "{:.1f}%",
+                    }
+                )
+            )
 
-                    # Add explanatory text with insights
-                    st.markdown(
-                        """
-                    ### Interpretação dos Heatmaps
+            # Show improved categorical analysis using heatmaps
+            st.subheader("Distribuição de Categorias por Período")
+            time_categories = time_analyzer.create_category_time_heatmaps()
+            st.plotly_chart(time_categories, use_container_width=True)
 
-                    Os mapas de calor acima mostram:
-                    - A intensidade da cor indica a concentração de ocorrências
-                    - Valores mais escuros representam maior concentração
-                    - Cada célula mostra a porcentagem exata
-                    - Padrões temporais específicos para cada categoria
+            # Add explanatory text with insights
+            st.markdown(
+                """
+            ### Interpretação dos Heatmaps
 
-                    Esta visualização permite identificar facilmente:
-                    - Categorias predominantes em cada período
-                    - Períodos com maior variação de ocorrências
-                    - Padrões de concentração ao longo do dia
-                    """
-                    )
+            Os mapas de calor acima mostram:
+            - A intensidade da cor indica a concentração de ocorrências
+            - Valores mais escuros representam maior concentração
+            - Cada célula mostra a porcentagem exata
+            - Padrões temporais específicos para cada categoria
+
+            Esta visualização permite identificar facilmente:
+            - Categorias predominantes em cada período
+            - Períodos com maior variação de ocorrências
+            - Padrões de concentração ao longo do dia
+            """
+            )
 
         with accident_map_tab:
             visualizer.show_accident_map(df_filtered)
