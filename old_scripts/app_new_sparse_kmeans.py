@@ -84,10 +84,6 @@ def preprocess_features(df):
 @st.cache_data
 def preprocess_for_kmeans(df):
     """Pré-processa dados para K-means regular."""
-    df = df[
-        (df["Data_Ocorrencia"] >= "2020-12-01")
-        & (df["Data_Ocorrencia"] <= "2024-07-31")
-    ]
 
     # Aggregate data by city first
     city_data = (
@@ -323,12 +319,6 @@ def create_bar_chart(df, x, y, title):
 
 
 def create_concessionaria_analysis(df):
-    # Group data by Concessionaria
-    # df = df[
-    #     (df["Data_Ocorrencia"] >= "2020-12-01")
-    #     & (df["Data_Ocorrencia"] <= "2024-07-31")
-    # ]
-
     grouped = (
         df.groupby("Concessionaria")
         .agg(

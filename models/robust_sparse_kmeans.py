@@ -24,12 +24,8 @@ class SparseKMeansResult:
 
 class RobustSparseKMeans(BaseEstimator, ClusterMixin):
     """
-    Implements Robust Sparse K-means clustering algorithm.
-
-    This algorithm extends traditional k-means by incorporating:
-    1. Feature weighting to identify important variables
-    2. L1 regularization for sparsity
-    3. Robust estimation techniques for handling outliers
+    Enhanced implementation of Robust Sparse K-means clustering algorithm.
+    Now includes outlier detection and additional metrics for comparison.
     """
 
     def __init__(
@@ -39,23 +35,148 @@ class RobustSparseKMeans(BaseEstimator, ClusterMixin):
         max_iter: int = 100,
         tol: float = 1e-4,
         random_state: Optional[int] = None,
+        alpha: float = 0.1,  # Added trimming parameter for outlier detection
     ):
         """
-        Initialize Robust Sparse K-means.
+        Initialize Robust Sparse K-means with enhanced parameters.
 
         Args:
-            n_clusters: Number of clusters
+            n_clusters: Number of clusters to form
             lasso_param: L1 regularization parameter
             max_iter: Maximum number of iterations
             tol: Convergence tolerance
             random_state: Random seed for reproducibility
+            alpha: Trimming proportion for outlier detection (0 to 1)
         """
         self.n_clusters = n_clusters
         self.lasso_param = lasso_param
         self.max_iter = max_iter
         self.tol = tol
         self.random_state = random_state
+        self.alpha = alpha
         self.logger = logging.getLogger(__name__)
+
+        # Initialize additional attributes needed for comparison
+        self.n_iter_ = 0
+        self.outliers_ = np.array([])
+        self.inertia_ = np.inf
+
+    def _identify_outliers(
+        self, X: np.ndarray, distances: np.ndarray, weights: np.ndarray
+    ) -> np.ndarray:
+        """
+        Identifies outliers using trimming approach.
+
+        Args:
+            X: Input data
+            distances: Matrix of distances to cluster centers
+            weights: Current feature weights
+
+        Returns:
+            Boolean mask indicating outlier points
+        """
+        if self.alpha == 0:
+            return np.zeros(len(X), dtype=bool)
+
+        # Calculate minimum distance to any cluster center
+        min_distances = np.min(distances, axis=1)
+
+        # Use trimming to identify outliers
+        if len(min_distances) > 0:
+            threshold = np.percentile(min_distances, (1 - self.alpha) * 100)
+            outlier_mask = min_distances > threshold
+            return outlier_mask
+
+        return np.zeros(len(X), dtype=bool)
+
+    def fit(self, X: np.ndarray, feature_names: List[str]) -> "RobustSparseKMeans":
+        """
+        Enhanced fit method with outlier detection and iteration tracking.
+        """
+        self.logger.info("Starting Robust Sparse K-means fitting")
+
+        try:
+            if self.random_state is not None:
+                np.random.seed(self.random_state)
+
+            n_samples, n_features = X.shape
+
+            # Data standardization
+            self.scaler_ = StandardScaler()
+            X = self.scaler_.fit_transform(X)
+
+            # Initialize centers and weights
+            centers = self._init_centers(X)
+            weights = np.ones(n_features) / np.sqrt(n_features)
+
+            # Initialize outlier mask
+            outlier_mask = np.zeros(n_samples, dtype=bool)
+
+            old_inertia = float("inf")
+            converged = False
+
+            for iteration in range(self.max_iter):
+                # Calculate weighted distances
+                distances = np.zeros((n_samples, self.n_clusters))
+                for k in range(self.n_clusters):
+                    diff = X - centers[k]
+                    distances[:, k] = np.sum(weights * diff**2, axis=1)
+
+                # Assign points to nearest cluster
+                labels = np.argmin(distances, axis=1)
+
+                # Update outlier identification
+                outlier_mask = self._identify_outliers(X, distances, weights)
+
+                # Update weights using non-outlier points
+                non_outlier_mask = ~outlier_mask
+                if np.any(non_outlier_mask):
+                    weights = self._update_weights(
+                        X[non_outlier_mask], centers, labels[non_outlier_mask]
+                    )
+
+                # Update centers using non-outlier points
+                centers = self._update_centers(
+                    X[non_outlier_mask], labels[non_outlier_mask], weights
+                )
+
+                # Calculate inertia using non-outlier points
+                inertia = 0
+                for k in range(self.n_clusters):
+                    mask = (labels == k) & ~outlier_mask
+                    if np.any(mask):
+                        diff = X[mask] - centers[k]
+                        inertia += np.sum(weights * np.sum(diff**2, axis=0))
+
+                # Check convergence
+                if abs(old_inertia - inertia) < self.tol:
+                    converged = True
+                    break
+
+                old_inertia = inertia
+                self.n_iter_ += 1
+
+            # Store final results
+            self.cluster_centers_ = self.scaler_.inverse_transform(centers)
+            self.labels_ = labels
+            self.weights_ = weights
+            self.inertia_ = inertia
+            self.outliers_ = np.where(outlier_mask)[0]
+
+            # Calculate feature importance
+            importance_threshold = 1e-4
+            self.feature_importance_ = dict(zip(feature_names, weights))
+            self.selected_features_ = [
+                name
+                for name, weight in self.feature_importance_.items()
+                if weight > importance_threshold
+            ]
+
+            return self
+
+        except Exception as e:
+            self.logger.error(f"Error during model fitting: {str(e)}", exc_info=True)
+            raise
 
     def _init_centers(self, X: np.ndarray) -> np.ndarray:
         """
@@ -164,86 +285,6 @@ class RobustSparseKMeans(BaseEstimator, ClusterMixin):
 
         except Exception as e:
             self.logger.error(f"Error updating centers: {str(e)}", exc_info=True)
-            raise
-
-    def fit(self, X: np.ndarray, feature_names: List[str]) -> "RobustSparseKMeans":
-        """
-        Fit the Robust Sparse K-means model with improved optimization.
-        """
-        self.logger.info("Starting Robust Sparse K-means fitting")
-
-        try:
-            if self.random_state is not None:
-                np.random.seed(self.random_state)
-
-            n_samples, n_features = X.shape
-
-            # Data standardization
-            self.scaler_ = StandardScaler()
-            X = self.scaler_.fit_transform(X)
-
-            # Initialize centers using improved k-means++
-            centers = self._init_centers(X)
-
-            # Initialize weights uniformly with L2 norm = 1
-            weights = np.ones(n_features) / np.sqrt(n_features)
-
-            old_inertia = float("inf")
-            converged = False
-
-            for iteration in range(self.max_iter):
-                # Calculate weighted distances
-                distances = np.zeros((n_samples, self.n_clusters))
-                for k in range(self.n_clusters):
-                    diff = X - centers[k][np.newaxis, :]
-                    distances[:, k] = np.sum(weights[np.newaxis, :] * diff**2, axis=1)
-
-                # Assign points to nearest cluster
-                labels = np.argmin(distances, axis=1)
-
-                # Update weights with correct normalization
-                weights = self._update_weights(X, centers, labels)
-
-                # Update centers
-                centers = self._update_centers(X, labels, weights)
-
-                # Calculate inertia (within-cluster sum of squares)
-                inertia = 0
-                for k in range(self.n_clusters):
-                    mask = labels == k
-                    if np.any(mask):
-                        diff = X[mask] - centers[k]
-                        inertia += np.sum(weights * np.sum(diff**2, axis=0))
-
-                # Check convergence
-                if abs(old_inertia - inertia) < self.tol:
-                    converged = True
-                    break
-
-                old_inertia = inertia
-
-            # Store results
-            self.cluster_centers_ = self.scaler_.inverse_transform(centers)
-            self.labels_ = labels
-            self.weights_ = weights
-            self.inertia_ = inertia
-
-            # Calculate feature importance with better thresholding
-            importance_threshold = 1e-4  # Slightly higher threshold
-            self.feature_importance_ = {
-                name: weight for name, weight in zip(feature_names, weights)
-            }
-
-            self.selected_features_ = [
-                name
-                for name, weight in self.feature_importance_.items()
-                if weight > importance_threshold
-            ]
-
-            return self
-
-        except Exception as e:
-            self.logger.error(f"Error during model fitting: {str(e)}", exc_info=True)
             raise
 
     def predict(self, X: np.ndarray) -> np.ndarray:

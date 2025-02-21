@@ -50,10 +50,6 @@ def preprocess_for_kmeans(df):
 
 def preprocess_for_sparse_kmeans(df):
     # Filtrar dados de dezembro de 2020 a julho de 2024
-    df = df[
-        (df["Data_Ocorrencia"] >= "2020-12-01")
-        & (df["Data_Ocorrencia"] <= "2024-07-31")
-    ]
 
     city_data = (
         df.groupby("Municipio")

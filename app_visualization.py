@@ -10,12 +10,14 @@ Version: 1.0.0
 
 import logging
 from sklearn.cluster import KMeans
+from sklearn.discriminant_analysis import StandardScaler
 import streamlit as st
 import pandas as pd
 from typing import Dict
 
 from models.robust_sparse_kmeans import SparseKMeansProcessor
 from utils.analyser import SparseClusterAnalyzer, TimePeriodAnalyzer
+from utils.comparison import ClusteringComparison, analyze_clustering_differences, generate_detailed_report
 from utils.data import DataLoader, DataProcessor
 from utils.filter import DataFilter, SidebarFilters
 from utils.logging import LoggerSetup
@@ -43,6 +45,7 @@ class Main:
             kmeans_numerical,
             kmeans_categorical,
             robust_sparse_kmeans,
+            clustering_comparison,
             accident_map_tab,
             time_analysis,
             concessionaria_analysis,
@@ -51,6 +54,7 @@ class Main:
                 "K-Means Numérico",
                 "K-Means Categórico",
                 "Robust Sparse K-Means",
+                "Comparação de Métodos",
                 "Mapa de Acidentes",
                 "Análise por Período",
                 "Análise por Concessionária",
@@ -266,6 +270,176 @@ class Main:
                 st.error(f"Erro na análise de clusters esparsos: {str(e)}")
                 logging.error("Error in sparse clustering analysis", exc_info=True)
 
+        with clustering_comparison:
+            st.header("Análise Comparativa: K-means vs Robust Sparse K-means")
+
+
+            st.markdown(
+                """
+            ### Sobre a Análise Comparativa
+            Esta análise compara o K-means tradicional com o Robust Sparse K-means,
+            considerando múltiplos aspectos como estrutura dos clusters, importância
+            das features e robustez a outliers.
+            """
+            )
+
+            # Realizar análise comparativa
+            try:
+
+                # Verificar se estamos usando as colunas corretas
+                required_features = [
+                    "Data_Ocorrencia",
+                    "Interrupcao",
+                    "Prejuizo_Financeiro",
+                ]
+
+                # Criar dados para clustering
+                clustering_data = pd.DataFrame()
+                clustering_data = (df_filtered.groupby("Municipio")
+                    .agg(
+                        {
+                            "Latitude": "first",
+                            "Longitude": "first",
+                            "Data_Ocorrencia": "count",
+                            "Interrupcao": "sum",
+                            "Prejuizo_Financeiro": "sum",
+                        }
+                    )
+                .reset_index())
+                clustering_data.rename(columns={"Data_Ocorrencia": "num_acidentes"}, inplace=True)
+                
+                # Contar acidentes por grupo (se necessário)
+                # if "Data_Ocorrencia" in df_filtered.columns:
+                #     accidents_count = df_filtered.groupby(df_filtered.index)[
+                #         "Data_Ocorrencia"
+                #     ].count()
+                #     clustering_data["num_acidentes"] = accidents_count
+
+                # Adicionar outras features
+                # for feature in ["Interrupcao", "Prejuizo_Financeiro"]:
+                #     if feature in df_filtered.columns:
+                #         clustering_data[feature] = df_filtered[feature]
+
+                # Verificar se temos todas as features necessárias
+                if len(clustering_data.columns) < 3:
+                    st.error(
+                        """
+                        Dados insuficientes para análise.
+                        Necessitamos de informações sobre:
+                        - Número de acidentes
+                        - Tempo de interrupção
+                        - Prejuízo financeiro
+                    """
+                    )
+                    return
+
+                # Preparar dados para clustering
+                features = ["num_acidentes", "Interrupcao", "Prejuizo_Financeiro"]
+                X = clustering_data[features].values
+                feature_names = clustering_data[features].columns.tolist()
+                # Normalizar dados
+                scaler = StandardScaler()
+                X_scaled = scaler.fit_transform(X)
+
+                # Criar e executar comparador
+                comparator = ClusteringComparison(
+                    X=X_scaled,
+                    feature_names=feature_names,
+                    n_clusters=filters["n_clusters"],
+                    random_state=42,
+                )
+
+                # Análise principal
+                metrics = comparator.fit_and_compare()
+
+                # Criar e mostrar visualizações
+                visualizations = comparator.create_comparison_visualizations()
+
+                st.subheader("Comparação de Importância das Features")
+                st.plotly_chart(
+                    visualizations["feature_importance"], use_container_width=True
+                )
+
+                # st.subheader("Distribuição dos Clusters")
+                # st.plotly_chart(
+                #     visualizations["cluster_distribution"], use_container_width=True
+                # )
+
+                # # Análises adicionais conforme seleção do usuário
+                # if show_stability:
+                #     with st.spinner("Realizando análise de estabilidade..."):
+                #         stability_metrics = comparator.analyze_cluster_stability(
+                #             n_runs=n_runs
+                #         )
+                #         stability_viz = comparator.create_stability_visualization(
+                #             stability_metrics
+                #         )
+
+                #         st.subheader("Análise de Estabilidade")
+                #         st.plotly_chart(stability_viz, use_container_width=True)
+
+                # if show_interpretability:
+                #     st.subheader("Interpretabilidade dos Clusters")
+                #     interpretability = comparator.compare_cluster_interpretability()
+                #     st.dataframe(
+                #         interpretability.style.background_gradient(
+                #             subset=["Valor Médio"], cmap="RdYlBu"
+                #         )
+                #     )
+                st.subheader("Análise SHAP dos Modelos")
+
+                with st.spinner("Realizando análise SHAP..."):
+                    analysis_results, comparison_table = analyze_clustering_differences(
+                        kmeans_model=comparator.kmeans,
+                        rskc_model=comparator.rskc,
+                        X=X_scaled,
+                        feature_names=feature_names,
+                    )
+
+                    # Mostrar visualizações SHAP
+                    st.plotly_chart(
+                        analysis_results["visualizations"]["feature_importance"],
+                        use_container_width=True,
+                    )
+
+                    # Mostrar tabela comparativa
+                    st.subheader("Comparação Detalhada das Features")
+                    st.dataframe(
+                        comparison_table.style.background_gradient(
+                            subset=["Diferença Relativa"], cmap="RdYlBu"
+                        )
+                    )
+
+                    # Mostrar análise de interações
+                    st.subheader("Análise de Interações entre Features")
+                    st.dataframe(
+                        analysis_results[
+                            "interaction_analysis"
+                        ].style.background_gradient(cmap="viridis")
+                    )
+                # # Gerar e mostrar relatório
+                # st.subheader("Relatório Detalhado")
+                # report = generate_detailed_report(
+                #     comparator, stability_metrics if show_stability else None
+                # )
+                # st.markdown(report)
+
+            except Exception as e:
+                st.error(
+                    f"""
+                    Erro na análise comparativa: {str(e)}
+
+                    Detalhes do erro:
+                    - Tipo de erro: {type(e).__name__}
+                    - Mensagem: {str(e)}
+
+                    Sugestões de resolução:
+                    1. Verifique se todas as colunas necessárias estão presentes
+                    2. Confira se os dados estão no formato correto
+                    3. Ajuste os parâmetros de clustering se necessário
+                """
+                )
+                st.exception(e)
         with time_analysis:
             st.header("Análise Temporal de Acidentes")
 

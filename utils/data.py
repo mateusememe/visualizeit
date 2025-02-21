@@ -52,10 +52,16 @@ class DataLoader:
         """
 
         df = pd.read_csv(
-            "datasets/acidents_ferroviarios_2004_2024_com_coords.csv",
+            "datasets/updated/acidents_ferroviarios_2020_2024_com_coords.csv",
             encoding="UTF-8",
-            sep=";",
+            sep=",",
         )
+        df = df.rename(columns={
+            'Interrupção': 'Interrupcao',
+            'Prejuízo_Financeiro': 'Prejuizo_Financeiro',
+            'Perímetro_Urbano': 'Perimetro_Urbano',
+            'Quilômetro_Inicial': 'Quilometro_Inicial'
+        })
         df["Data_Ocorrencia"] = pd.to_datetime(df["Data_Ocorrencia"], format="mixed")
         df["Quilometro_Inicial"] = pd.to_numeric(
             df["Quilometro_Inicial"].replace(",", "."), errors="coerce"
