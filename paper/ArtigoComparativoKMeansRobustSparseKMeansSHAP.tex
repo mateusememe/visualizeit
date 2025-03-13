@@ -9,7 +9,6 @@
 \usepackage{algorithmic}
 \usepackage{graphicx}
 \usepackage{textcomp}
-\usepackage{placeins}
 \usepackage{xcolor}
 \usepackage[brazilian]{babel}  % ou \usepackage[portuguese]{babel}
 \usepackage[skip=10pt]{caption} % Ajusta o espaço para todas as legendas
@@ -44,11 +43,11 @@ Visualização de Dados, K-Means, Robust Sparse K-Means, Análise de Acidentes F
 \section{Introdução}
 \subsection{Contextualização do Problema}
 
-A Agência Nacional de Transportes Terrestres (ANTT) mantém registros detalhados destes acidentes através do Relatório de Acompanhamento de Acidentes Ferroviários (RAAF), atualizado em 2025, gerando um volume considerável de dados que, embora rico em informações, apresenta desafios significativos para análise e interpretação. A complexidade destes dados deriva não apenas de seu volume, mas também da diversidade de variáveis envolvidas, incluindo causas diretas e contributivas, impactos financeiros, características operacionais e condições geográficas. Estudos recentes, como o trabalho de Meng et al. \cite{meng2022}, demonstram que a aplicação de técnicas avançadas de análise de dados pode fornecer \textit{insights} valiosos sobre os fatores críticos relacionados a acidentes ferroviários, contribuindo significativamente para o desenvolvimento de mecanismos de alerta precoce e prevenção de ocorrências.
+A Agência Nacional de Transportes Terrestres (ANTT) mantém registros detalhados destes acidentes através do Relatório de Acompanhamento de Acidentes Ferroviários (RAAF), atualizado em 2025, gerando um volume considerável de dados que, embora rico em informações, apresenta desafios significativos para análise e interpretação. A complexidade destes dados deriva não apenas de seu volume, mas também da diversidade de variáveis envolvidas, incluindo causas diretas e contributivas, impactos financeiros, características operacionais e condições geográficas. Estudos recentes, como o trabalho de Meng et al. \cite{b6}, demonstram que a aplicação de técnicas avançadas de análise de dados pode fornecer \textit{insights} valiosos sobre os fatores críticos relacionados a acidentes ferroviários, contribuindo significativamente para o desenvolvimento de mecanismos de alerta precoce e prevenção de ocorrências.
 
 \section{Trabalhos Relacionados}
 
-A análise de acidentes ferroviários tem sido objeto de diversos estudos que empregam técnicas avançadas de análise de dados. Meng et al. \cite{meng2022} propuseram uma abordagem baseada em \textit{ensemble learning} para previsão de acidentes ferroviários, alcançando resultados significativos na identificação de fatores de risco críticos relacionados a descarrilhamentos e colisões. Seu trabalho demonstrou a eficácia de técnicas de aprendizado de máquina na análise de dados ferroviários, obtendo métricas de desempenho expressivas (\textit{Accuracy}: 0.879, \textit{Precision}: 0.879, \textit{Recall}: 0.883 e \textit{F1-score}: 0.881).
+A análise de acidentes ferroviários tem sido objeto de diversos estudos que empregam técnicas avançadas de análise de dados. Meng et al. \cite{b6} propuseram uma abordagem baseada em \textit{ensemble learning} para previsão de acidentes ferroviários, alcançando resultados significativos na identificação de fatores de risco críticos relacionados a descarrilhamentos e colisões. Seu trabalho demonstrou a eficácia de técnicas de aprendizado de máquina na análise de dados ferroviários, obtendo métricas de desempenho expressivas (\textit{Accuracy}: 0.879, \textit{Precision}: 0.879, \textit{Recall}: 0.883 e \textit{F1-score}: 0.881).
 
 A abordagem desse estudo se diferencia ao focar na análise comparativa entre técnicas de \textit{clustering}, especificamente o \textit{K-means} tradicional e o \textit{Robust Sparse K-means}, com ênfase na visualização geoespacial dos padrões de acidentes. Além disso, este busca identificar padrões espaciais e temporais que possam informar estratégias de prevenção e gestão de segurança.
 
@@ -96,7 +95,7 @@ Este trabalho apresenta as seguintes contribuições principais:
 \section{Base de Dados}
 
 \subsection{Descrição dos Dados}
-Este trabalho utiliza dados provenientes do Relatório de Acompanhamento de Acidentes Ferroviários (RAAF) da Agência Nacional de Transportes Terrestres (ANTT). O conjunto de dados abrange um período de 20 anos, compreendendo registros de acidentes ferroviários ocorridos no Brasil entre 2020 e 2024. A base de dados encontra-se disponível publicamente através do Portal de Dados Abertos da ANTT \cite{antt2025}, demonstrando o compromisso da agência com a transparência e o acesso à informação.
+Este trabalho utiliza dados provenientes do Relatório de Acompanhamento de Acidentes Ferroviários (RAAF) da Agência Nacional de Transportes Terrestres (ANTT). O conjunto de dados abrange um período de 20 anos, compreendendo registros de acidentes ferroviários ocorridos no Brasil entre 2020 e 2024. A base de dados encontra-se disponível publicamente através do Portal de Dados Abertos da ANTT \cite{b1}, demonstrando o compromisso da agência com a transparência e o acesso à informação.
 
 O conjunto completo apresenta uma estrutura multidimensional, incorporando 32 atributos que descrevem diferentes aspectos de cada ocorrência. Estes atributos podem ser cate gorizados em cinco dimensões principais: informações temporais, dados geográficos, características do acidente, aspectos operacionais e impactos resultantes.
 
@@ -167,7 +166,7 @@ Apesar da riqueza de informações, o conjunto de dados apresenta algumas limita
 \section{Pré-processamento e Enriquecimento dos Dados}
 
 \subsection{Enriquecimento Geográfico}
-O enriquecimento geográfico foi realizado através de um processo automatizado utilizando a API Google \textit{Geocoding} \cite{geocoding2024}:
+O enriquecimento geográfico foi realizado através de um processo automatizado utilizando a API Google \textit{Geocoding} \cite{b5}:
 
 \begin{enumerate}
 \item Construção de \textit{strings} de localização combinando Município, UF e País.
@@ -297,7 +296,7 @@ O sistema foi implementado utilizando um conjunto moderno de tecnologias de cód
 \subsection{Técnicas de Clustering}
 
 \subsubsection{K-Means Tradicional}
-O algoritmo \textit{K-means tradicional} \cite{kmeans1967} é implementado como baseline para comparação, seguindo a formulação clássica:
+O algoritmo \textit{K-means tradicional} \cite{b3} é implementado como baseline para comparação, seguindo a formulação clássica:
 
 \begin{equation}
 \min_{\{C_k\}_{k=1}^K} \sum_{k=1}^K \sum_{x_i \in C_k} ||x_i - \mu_k||^2
@@ -306,7 +305,7 @@ O algoritmo \textit{K-means tradicional} \cite{kmeans1967} é implementado como 
 onde $C_k$ representa o k-ésimo \textit{cluster} e $\mu_k$ seu centróide.
 
 \subsubsection{Determinação do Número Ótimo de Clusters}
-O número ótimo de \textit{clusters} é determinado através do método do cotovelo \cite{elbow_method1953}, analisando a variação da inércia:
+O número ótimo de \textit{clusters} é determinado através do método do cotovelo \cite{b4}, analisando a variação da inércia:
 
 \begin{equation}
 \text{\textit{Inertia}}(k) = \sum_{i=1}^n \min_{\mu_j \in C} ||x_i - \mu_j||^2
@@ -315,7 +314,7 @@ O número ótimo de \textit{clusters} é determinado através do método do coto
 O ponto de inflexão na curva de inércia indica o número ideal de \textit{clusters}.
 
 \subsubsection{Robust Sparse K-Means com LASSO}
-O \textit{Robust Sparse K-means} \cite{rskc2017} incorpora regularização LASSO para seleção automática de características:
+O \textit{Robust Sparse K-means} \cite{b2} incorpora regularização LASSO para seleção automática de características:
 
 \begin{equation}
 \min_{\{C_k\}_{k=1}^K, w} \sum_{k=1}^K \sum_{x_i \in C_k} \sum_{j=1}^p w_j||x_{ij} - \mu_{kj}||^2 + \lambda||w||_1
@@ -404,20 +403,19 @@ A análise da distribuição espacial dos acidentes ferroviários revela padrõe
 \subsubsection{Padrões Regionais}
 Os resultados demonstram uma concentração significativa de acidentes em corredores ferroviários específicos, particularmente em regiões com intensa atividade de transporte de carga. A análise comparativa entre as técnicas de \textit{clustering} revela padrões distintos de agrupamento, como mostrado nas Figuras \ref{fig:cluster_map} e \ref{fig:robust_sparse_kmeans}.
 
-\begin{figure}[htbp]
+\begin{figure}[!htb]
     \centering
-    \includegraphics[width=0.95\linewidth]{kmeans_clustering.png}
+    \includegraphics[width=0.99\linewidth]{kmeans_clustering.png}
     \caption{Visualização dos \textit{clusters} geográficos identificados pelo \textit{K-Means} tradicional. Cada ponto representa um centróide distinto, com o tamanho dos círculos proporcional ao prejuízo financeiro total e a intensidade da cor referente ao tempo de interrupção total.}
     \label{fig:cluster_map}
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure}[!htb]
     \centering
-    \includegraphics[width=0.95\linewidth]{robust_sparse_kmeans.png}
+    \includegraphics[width=0.99\linewidth]{robust_sparse_kmeans.png}
     \caption{Visualização dos \textit{clusters} geográficos identificados pelo \textit{Robust Sparse K-Means}. Cada ponto representa um centróide distinto, com o tamanho dos círculos proporcional ao prejuízo financeiro total e a intensidade da cor referente ao tempo de interrupção total. Note-se a redução significativa na influência de \textit{outliers} quando comparado à Figura \ref{fig:cluster_map}.}
     \label{fig:robust_sparse_kmeans}
 \end{figure}
-\FloatBarrier
 
 A análise dos padrões regionais revela quatro aspectos principais:
 
@@ -465,29 +463,44 @@ Os resultados revelam um desempenho superior consistente do \textit{K-Means} tra
     \item \textbf{\textit{Calinski-Harabasz Score}:} A diferença mais pronunciada foi observada nesta métrica, com o \textit{K-Means} atingindo 10936.536 comparado a 292.690 do \textit{Robust Sparse K-Means}. Conforme estabelecido por Caliński e Harabasz \cite{calinski1974dendrite}, valores maiores indicam \textit{clusters} mais densos e bem separados. A magnitude desta diferença sugere que o \textit{K-Means} foi particularmente eficaz em maximizar a homogeneidade dentro dos clusters enquanto mantinha uma clara separação entre eles.
 \end{itemize}
 
-Embora o \textit{K-Means} tenha demonstrado métricas superiores em termos de separação dos clusters, sua interpretação é limitada pela influência de outliers. O Robust Sparse \textit{K-Means}, por outro lado, permitiu uma identificação mais clara dos fatores relevantes, ainda que com menor coesão na estrutura dos clusters.
-
-\subsubsection{Interpretação dos Clusters via SHAP}
-
-Para interpretar os agrupamentos gerados pelo \textit{K-Means} e pelo \textit{Robust Sparse K-Means}, empregamos o método \textit{SHapley Additive Explanations} (SHAP) \cite{lundberg2017unified}, originalmente desenvolvido para modelos supervisionados, mas aqui adaptado para a análise de clustering. No contexto tradicional, o SHAP é utilizado para interpretar predições de modelos preditivos, quantificando a contribuição de cada variável para uma determinada previsão. No entanto, em problemas não supervisionados, como o clustering, não há uma variável-alvo definida. Para contornar essa limitação, utilizamos o SHAP para explicar a distância entre os pontos e os centróides dos clusters, interpretando quais variáveis mais influenciam a alocação dos dados em diferentes agrupamentos.
-
-A abordagem adotada consiste em tratar a distância mínima de cada ponto ao centróide do cluster atribuído como uma variável \textit{proxy}, sendo esta utilizada como saída do modelo a ser explicado pelo SHAP. Dessa forma, a importância de cada variável no processo de agrupamento pode ser analisada em termos de sua influência na distância até os centróides. Formalmente, para um ponto \( x_i \), definimos a contribuição das variáveis individuais na formação dos clusters como:
-
-\begin{equation}
+\subsubsection{Análise de Importância de Características com \textit{SHAP}}
+Para interpretar o papel de cada variável na formação dos \textit{clusters}, empregou-se o método \textit{SHAP} (\textit{SHapley Additive exPlanations}) \cite{lundberg2017unified}, adaptado para o contexto de \textit{clustering}. Nesta abordagem, a contribuição de uma observação é definida como o negativo da distância mínima aos centróides dos \textit{clusters}. Formalmente, para um ponto \(x\), essa contribuição é dada por:
+\[
 \phi(x) = -\min_{k=1,\dots,K} \left\{ \sum_{j=1}^{p} w_{j}^{(k)} \left(x_j - \mu_{j}^{(k)}\right)^2 \right\},
-\end{equation}
-
-onde:
+\]
+em que:
 \begin{itemize}
     \item \(K\) representa o número de \textit{clusters};
     \item \(p\) é o número de características;
-    \item \(\mu^{(k)}\) denota o centróide do \(k\)-ésimo cluster;
-    \item \(w_{j}^{(k)}\) são os pesos atribuídos à característica \(j\), sendo que, no \textit{K-Means}, \(w_{j}^{(k)}=1\) para todas as variáveis, enquanto no \textit{Robust Sparse K-Means} esses pesos são ajustados via regularização \textit{LASSO} para enfatizar características mais relevantes.
+    \item \(\mu^{(k)}\) denota o centróide do \(k\)-ésimo \textit{cluster};
+    \item \(w_{j}^{(k)}\) são os pesos atribuídos à característica \(j\), onde para o \textit{K-Means} tradicional \(w_{j}^{(k)}=1\) e, para o \textit{Robust Sparse K-Means}, os pesos são ajustados para enfatizar características de maior relevância.
 \end{itemize}
 
-A implementação foi realizada utilizando o \textit{KernelExplainer} do SHAP para estimar os valores de contribuição de cada variável. Os gráficos \textit{summary plot} (Figuras \ref{fig:shap_summary_kmeans} e \ref{fig:shap_summary_robust}) foram utilizados para visualizar a importância global das variáveis, enquanto os gráficos de dependência (Figuras \ref{fig:shap_dependence_kmeans} e \ref{fig:shap_dependence_robust}) permitiram identificar padrões específicos de influência. A comparação entre os modelos revelou que, no \textit{K-Means}, a variável \textit{Prejuízo Financeiro} ainda exerce alguma influência na definição dos clusters, enquanto no \textit{Robust Sparse K-Means}, essa variável foi eliminada devido à regularização \textit{LASSO}, tornando a segmentação mais dependente da variável \textit{Interrupção}. A análise dos valores SHAP também evidenciou que o \textit{Robust Sparse K-Means} reduziu significativamente a influência de \textit{outliers}, proporcionando uma estrutura de agrupamento mais robusta.
+Utilizando o \textit{KernelExplainer} do \textit{SHAP}, calcularam-se os valores médios absolutos de \(\phi(x)\) para cada característica, conforme demonstrado na Tabela \ref{tab:shap_comparison}. Esses valores quantificam a influência relativa de cada variável no processo de agrupamento.
 
-Dessa forma, a utilização do SHAP no contexto de clustering permitiu interpretar e validar a segmentação dos acidentes ferroviários, oferecendo um entendimento mais aprofundado dos padrões subjacentes aos dados.
+\begin{table}[!htb]
+    \centering
+    \begin{tabular}{|l|c|c|}
+        \hline
+        \textbf{Característica} & \textbf{K-Means} & \textbf{Robust Sparse K-Means} \\
+        \hline
+        Interrupção & 0.572 & 0.941 \\
+        Número de Acidentes & 0.608 & 0.744 \\
+        Prejuízo Financeiro & 0.480 & 0.067 \\
+        \hline
+    \end{tabular}
+    \caption{Valores médios absolutos de \textit{SHAP} para cada característica.}
+    \label{tab:shap_comparison}
+\end{table}
+
+Observa-se que, para a variável \textbf{Interrupção}, o \textit{Robust Sparse K-Means} apresenta um valor médio absoluto de \textit{SHAP} de 0.941, superior ao 0.572 do \textit{K-Means} tradicional. Esse resultado indica que o algoritmo robusto atribui maior importância ao tempo de interrupção na formação dos \textit{clusters}, possivelmente por sua capacidade de destacar variáveis que melhor diferenciam os grupos.
+
+De maneira similar, a variável \textbf{Número de Acidentes} possui valores de 0.608 e 0.744 para o \textit{K-Means} e o \textit{Robust Sparse K-Means}, respectivamente, sugerindo que o método robusto também enfatiza, de forma mais acentuada, a frequência de acidentes como fator determinante para a estruturação dos grupos.
+
+Por outro lado, a variável \textbf{Prejuízo Financeiro} revela uma discrepância marcante: enquanto o \textit{K-Means} atribui um valor moderado (0.480) à sua contribuição, o \textit{Robust Sparse K-Means} registra um valor muito baixo (0.067). Essa diferença indica que o algoritmo robusto tende a minimizar a influência do prejuízo financeiro, possivelmente devido a uma menor variabilidade ou relevância dessa característica para a definição dos \textit{clusters}.
+
+Em síntese, os resultados sugerem que o \textit{Robust Sparse K-Means} direciona sua atenção para variáveis que apresentam maior capacidade de
+discriminação (como \textbf{Interrupção} e \textbf{Número de Acidentes}), ao mesmo tempo em que reprime aquelas de menor relevância (\textbf{Prejuízo Financeiro}). Tal comportamento é compatível com a finalidade dos métodos robustos e esparsos, que buscam realçar as características mais informativas e reduzir o impacto de variáveis menos contributivas.
 
 
 \subsection{Análise Comparativa}
@@ -504,106 +517,115 @@ A comparação entre \textit{K-Means} tradicional e \textit{Robust Sparse K-Mean
 
 \begin{figure}[!htb]
     \centering
-    \includegraphics[width=0.99\linewidth]{elbow-plot-sparse.png}
+    \includegraphics[width=0.8\linewidth]{elbow-plot-sparse.png}
     \caption{Gráfico do método do cotovelo mostrando a variação da inércia em função do número de \textit{clusters} para o \textit{Robust Sparse K-Means}
     \ref{fig:elbow-plot-kmeans}.}
     \label{fig:elbow-plot-sparse-kmeans}
 \end{figure}
 
+
+\subsection{Seleção de Características}
+
+\subsubsection{Características Relevantes}
+O \textit{Robust Sparse K-Means} identificou automaticamente as características mais relevantes para a formação dos \textit{clusters} através de sua capacidade de atribuir pesos às variáveis durante o processo de \textit{clustering}. A Tabela \ref{tab:feature_scores} apresenta os \textit{scores} de importância de cada característica, demonstrando que o prejuízo financeiro exerce influência dominante na formação dos agrupamentos, com um \textit{score} de 0.813, seguido pelo tempo de interrupção (0.442) e número de acidentes (0.380).
+
+\begin{table}[!htb]
+    \centering
+    \begin{tabular}{|l|c|}
+        \hline
+        \textbf{Característica} & \textbf{\textit{Score} de Importância} \\
+        \hline
+        Prejuízo Financeiro & 0.813 \\
+        Interrupção & 0.442 \\
+        Número de Acidentes & 0.380 \\
+        \hline
+    \end{tabular}
+    \caption[\normalfont{\textit{Scores} de importância das características}]{\textit{Scores} de importância das características identificadas pelo \textit{Robust Sparse K-Means}. Os valores são normalizados e refletem a contribuição relativa de cada variável para a formação dos \textit{clusters}.}
+    \label{tab:feature_scores}
+\end{table}
+
+\subsubsection{Impacto na Análise}
+A seleção automática de características proporcionou uma redução significativa na dimensionalidade dos dados sem perda significativa de informação. A análise dos \textit{scores} de importância revela aspectos fundamentais sobre os padrões de acidentes ferroviários:
+
+\begin{itemize}
+
+\item O prejuízo financeiro emerge como a característica mais influente, com um \textit{score} de 0.813, indicando que este fator é preponderante na diferenciação entre clusters. Esta dominância sugere que o impacto econômico dos acidentes é um indicador mais robusto para a identificação de padrões do que a frequência dos eventos em si.
+
+\item O tempo de interrupção apresenta um \textit{score} intermediário de 0.442, demonstrando sua relevância secundária na formação dos \textit{clusters}. Este resultado é particularmente interessante pois indica que, embora significativo, o tempo de paralisação operacional não está necessariamente correlacionado de forma linear com o prejuízo financeiro.
+
+\item O número de acidentes, com \textit{score} de 0.380, apresenta a menor influência entre as características analisadas. Este resultado sugere que a quantidade absoluta de ocorrências pode ser menos importante para a compreensão dos padrões de acidentes do que a severidade de seus impactos econômicos e operacionais.
+
+\end{itemize}
+
+Esta hierarquização automática das características fornece \textit{insights} valiosos para a gestão da segurança ferroviária, sugerindo que estratégias de prevenção e mitigação devem priorizar a redução do impacto financeiro dos acidentes, além de simplesmente buscar a redução de sua frequência.
+
+    
 \section{Discussão}
 
-\subsection{Importância das Características Segundo SHAP}
-Para compreender melhor o impacto das variáveis \textit{Interrupção} e \textit{Prejuízo Financeiro} na formação dos \textit{clusters}, aplicamos a análise de interpretabilidade via SHAP (\textit{Shapley Additive Explanations}) para os modelos de clustering \textit{K-means} tradicional e \textit{Robust Sparse K-means}. A Figura~\ref{fig:shap_summary} apresenta o gráfico de importância global das características para cada algoritmo.
+\subsection{Robustez Estatística}
+A análise comparativa entre \textit{K-means} tradicional e \textit{Robust Sparse K-means} revelou diferenças significativas na capacidade de lidar com \textit{outliers} e na estabilidade dos \textit{clusters} formados. Um caso particularmente ilustrativo foi identificado nos registros da concessionária EFC (Estrada de Ferro Carajás), onde valores atípicos de prejuízos financeiros influenciaram significativamente a formação dos \textit{clusters} no \textit{K-means} tradicional.
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.48\textwidth]{shap_summary_kmeans.png}
-    \hfill
-    \includegraphics[width=0.48\textwidth]{shap_summary_robust.png}
-    \caption{Comparação da importância das características nos modelos \textit{K-means} e \textit{Robust Sparse K-means} baseada nos valores \textit{SHAP}.}
-    \label{fig:shap_summary_comparison}
-\end{figure}
+O \textit{Robust Sparse K-means} demonstrou superior robustez estatística através de três aspectos principais:
 
-Os resultados indicam que a \textit{Interrupção} foi a variável de maior impacto na segmentação dos dados em ambos os algoritmos. No \textit{K-means}, essa variável teve um peso dominante, mas ainda assim o \textit{Prejuízo Financeiro} apresentou uma contribuição pequena na diferenciação dos \textit{clusters}. Já no \textit{Robust Sparse K-means}, o impacto do \textit{Prejuízo Financeiro} foi completamente eliminado devido à regularização LASSO, resultando em uma segmentação baseada exclusivamente na variável \textit{Interrupção}. 
+1. \textbf{Tratamento de \textit{Outliers}:} Enquanto o \textit{K-means} tradicional mostrou-se sensível aos registros extremos da EFC, distorcendo a formação dos \textit{clusters} nas regiões próximas, o \textit{Robust Sparse K-means} manteve uma distribuição mais equilibrada dos centróides, preservando a representatividade dos padrões regionais típicos.
 
-Essa diferença reflete a capacidade do \textit{Robust Sparse K-means} de filtrar variáveis menos relevantes, focando naquelas que realmente contribuem para a diferenciação dos grupos, enquanto o \textit{K-means} atribui um pequeno peso ao \textit{Prejuízo Financeiro}, permitindo que ele influencie minimamente a formação dos \textit{clusters}.
+2. \textbf{Estabilidade dos \textit{Clusters}:} A incorporação da regularização LASSO resultou em agrupamentos mais estáveis, menos suscetíveis a variações nos valores extremos. Esta característica é particularmente relevante para a análise de acidentes ferroviários, onde eventos extraordinários não devem obscurecer padrões operacionais regulares.
 
-\subsection{Impacto das Características na Formação dos \textit{Clusters}}
-Além da importância relativa das variáveis, os gráficos de dependência SHAP fornecem uma visão detalhada de como \textit{Interrupção} e \textit{Prejuízo Financeiro} influenciam a alocação dos dados nos \textit{clusters}. A Figura~\ref{fig:shap_dependence} apresenta os gráficos de dependência para ambos os modelos.
+3. \textbf{Consistência nas Métricas:} A variação da inércia em função do número de \textit{clusters} apresentou um comportamento mais suave no \textit{Robust Sparse K-means}, facilitando a identificação do número ótimo de \textit{clusters} através do método do cotovelo  \cite{b4}.
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.48\textwidth]{shap_dependence_kmeans.png}
-    \hfill
-    \includegraphics[width=0.48\textwidth]{shap_dependence_robust.png}
-    \caption{Gráficos de dependência SHAP para \textit{Interrupção}, considerando a interação com \textit{Prejuízo Financeiro}. Comparação entre \textit{K-means} e \textit{Robust Sparse K-means}.}
-    \label{fig:shap_dependence}
-\end{figure}
+\subsection{Interpretabilidade}
+A superioridade do \textit{Robust Sparse K-mean}s em termos de interpretabilidade manifesta-se em múltiplos níveis:
 
+1. \textbf{Seleção Automática de características:} A atribuição de pesos às variáveis (\textit{scores} de 0.813 para prejuízo financeiro, 0.442 para interrupção e 0.380 para número de acidentes) fornece uma hierarquia clara de importância, facilitando a compreensão dos fatores mais relevantes na caracterização dos acidentes.
 
-A análise detalhada dos gráficos de dependência revela padrões distintos entre os algoritmos:
+2. \textbf{Visualização Geoespacial:} A representação visual através do \textit{scatterplot} geolocalizado permite uma interpretação intuitiva dos padrões espaciais, com a vantagem adicional de que o \textit{Robust Sparse K-means} produz centróides mais representativos dos padrões típicos de cada região.
 
-\begin{itemize}
-    \item K-means: A \textit{Interrupção} apresentou um efeito crescente na segmentação dos dados, com valores elevados sendo os principais responsáveis pela diferenciação dos \textit{clusters}. O \textit{Prejuízo Financeiro}, apesar de sua baixa influência, ainda foi um fator considerado na separação dos grupos, especialmente em casos de prejuízos superiores a R\$ 1 milhão.
-    
-    \item Robust Sparse K-means: O impacto da \textit{Interrupção} foi ainda mais acentuado, com uma separação clara dos \textit{clusters} baseada nessa variável. No entanto, a ausência de qualquer efeito do \textit{Prejuízo Financeiro} nos valores SHAP confirma que ele não influenciou a formação dos agrupamentos neste modelo.
-\end{itemize}
-
-Essa diferença entre os modelos reforça a capacidade do \textit{Robust Sparse K-means} de focar exclusivamente na variável mais relevante, evitando que informações secundárias afetem a segmentação.
-
-\subsection{Comparação dos Modelos via SHAP}
-A análise comparativa dos valores SHAP entre os dois algoritmos destaca diferenças fundamentais na maneira como cada um considera as variáveis na formação dos \textit{clusters}. A Figura~\ref{fig:shap_comparison} apresenta essa comparação.
-
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.45\textwidth]{shap_comparison.png}
-    \caption{Comparação da distribuição dos valores SHAP entre \textit{K-means} e \textit{Robust Sparse K-means}.}
-    \label{fig:shap_comparison}
-\end{figure}
-
-Os principais achados dessa comparação incluem:
-\begin{enumerate}
-    \item Diferenciação na Seleção de Variáveis: O \textit{Robust Sparse K-means} eliminou completamente a influência do \textit{Prejuízo Financeiro}, enquanto o \textit{K-means} atribuiu um pequeno peso a essa variável.
-    \item Foco Exclusivo na \textit{Interrupção}: No modelo robusto, a \textit{Interrupção} foi a única variável relevante para a formação dos \textit{clusters}, enquanto no \textit{K-means} o impacto dessa variável foi ligeiramente atenuado pela consideração do \textit{Prejuízo Financeiro}.
-    \item Estabilidade dos \textit{Clusters}: O \textit{Robust Sparse K-means} gerou agrupamentos mais estáveis, uma vez que não permitiu que variações na variável \textit{Prejuízo Financeiro} influenciassem os resultados.
-\end{enumerate}
-
-Essa análise reforça que a escolha do algoritmo impacta diretamente na segmentação dos dados e na forma como os padrões são interpretados.
+3. \textbf{Dimensionalidade Efetiva:} A redução automática da influência de variáveis menos relevantes simplifica a interpretação dos resultados, mantendo apenas as dimensões que efetivamente contribuem para a diferenciação entre clusters.
 
 \subsection{Implicações Práticas}
-Os achados deste estudo apresentam implicações diretas para a gestão da segurança ferroviária:
-\begin{itemize}
-    \item Priorização de Recursos: A ênfase na \textit{Interrupção} sugere que medidas para reduzir o tempo de paralisação de operações devem ser priorizadas na formulação de estratégias de segurança.
-    \item Aprimoramento da Análise de Dados: A capacidade do \textit{Robust Sparse K-means} de eliminar variáveis irrelevantes reduz o risco de decisões baseadas em dados não essenciais.
-    \item Melhoria na Interpretação dos Padrões: O fato de o \textit{K-means} ainda atribuir um pequeno peso ao \textit{Prejuízo Financeiro} pode indicar que essa variável tem algum papel secundário na segmentação dos eventos, mas não é um fator determinante.
-\end{itemize}
+A aplicação desta metodologia tem implicações significativas para a gestão da segurança ferroviária:
+
+1. \textbf{Identificação de Prioridades:} A hierarquização das variáveis pelo \textit{Robust Sparse K-means} demonstrou uma identificação mais precisa e confiável dos padrões nos dados em comparação ao \textit{K-means} tradicional, especialmente ao lidar com valores atípicos e características complexas dos acidentes. Esta superioridade metodológica permitiu uma compreensão mais profunda das diferentes variáveis que caracterizam os acidentes ferroviários, oferecendo uma base mais sólida para o desenvolvimento de estratégias de segurança ferroviária.
+
+2. \textbf{Gestão de Risco:} A capacidade de identificar padrões robustos, mesmo na presença de eventos extremos como os da EFC, permite uma avaliação mais precisa dos riscos típicos em diferentes regiões.
+
+3. \textbf{Alocação de Recursos:} A visualização geoespacial dos clusters, combinada com os pesos das variáveis, fornece uma base objetiva para decisões sobre alocação de recursos de prevenção e resposta a acidentes.
+
+\subsection{Comparação com Trabalhos Anteriores}
+Nossa abordagem se diferencia e avança em relação a trabalhos anteriores em três aspectos principais:
+
+1. \textbf{Integração de Técnicas:} A combinação de \textit{Robust Sparse K-means} com visualização geoespacial oferece uma perspectiva mais completa do que as abordagens tradicionais de análise de acidentes ferroviários.
+
+2. \textbf{Tratamento de \textit{Outliers}:} A capacidade demonstrada de lidar com valores extremos, como os da EFC, representa um avanço significativo em relação a análises anteriores que frequentemente excluíam ou suavizavam estes casos.
+
+3. \textbf{Interpretabilidade Aumentada:} A seleção automática de características e a visualização integrada proporcionam maior facilidade de interpretação do que os métodos anteriores.
+
+\subsection{Análise dos Resultados de Importância das Características}
+
+A análise da importância das características através do \textit{Robust Sparse K-means} revelou que o prejuízo financeiro exerce influência dominante na formação dos agrupamentos, com um \textit{score} de importância de 0,813. Este resultado estabelece um interessante paralelo com os achados de Pineda-Jaramillo et al. \cite{pineda2023short}, onde, utilizando uma abordagem diferente baseada em \textit{LightGBM} e \textit{SHAP}, também identificaram que variáveis relacionadas a impacto operacional e econômico têm peso significativo na caracterização de eventos ferroviários. Enquanto o estudo efetuado focou no impacto financeiro direto dos acidentes, Pineda-Jaramillo et al. \cite{pineda2023short}. demonstraram que o tempo de atraso na partida - uma variável com implicações financeiras indiretas - foi o preditor mais importante para atrasos futuros.
+
+O alto \textit{score} de importância do impacto financeiro no presente trabalho (0,813) sugere que este fator é mais determinante na diferenciação entre \textit{clusters} do que a própria frequência dos eventos. Esta descoberta complementa a abordagem de Pineda-Jaramillo et al. \cite{pineda2023short}, que utilizaram gráficos de dependência \textit{SHAP} para visualizar como diferentes variáveis interagem na previsão de atrasos, demonstrando que impactos operacionais tendem a ter efeitos em cascata com implicações financeiras significativas.
+
 
 \section{Conclusão}
 
-Esta pesquisa comparou os algoritmos \textit{K-means} tradicional e \textit{Robust Sparse K-means} na modelagem de acidentes ferroviários, analisando o impacto das variáveis \textit{Interrupção} e \textit{Prejuízo Financeiro}. Os principais achados incluem:
-\begin{itemize}
-    \item A \textit{Interrupção} foi a variável dominante na segmentação dos dados em ambos os algoritmos, sendo o principal fator de diferenciação dos \textit{clusters}.
-    \item O \textit{K-means} atribuiu um pequeno peso ao \textit{Prejuízo Financeiro}, indicando que ele ainda teve alguma influência na segmentação dos dados.
-    \item O \textit{Robust Sparse K-means} eliminou completamente a influência do \textit{Prejuízo Financeiro}, focando exclusivamente na \textit{Interrupção}.
-    \item O modelo robusto produziu \textit{clusters} mais estáveis, pois filtrou variáveis menos relevantes e reduziu a sensibilidade a variações secundárias.
-\end{itemize}
+A análise comparativa entre o \textit{K-means} tradicional e o \textit{Robust Sparse K-mean}s na investigação de acidentes ferroviários demonstrou significativas vantagens da abordagem robusta na identificação de padrões. Esta superioridade foi particularmente evidenciada no tratamento dos registros da Estrada de Ferro Carajás (EFC), onde o método robusto manteve sua consistência analítica mesmo na presença de valores atípicos significativos. O \textit{Robust Sparse K-means} proporcionou uma compreensão mais precisa dos padrões de acidentes através da identificação automática das variáveis mais relevantes para a formação dos clusters, permitindo uma análise mais aprofundada das características que influenciam a segurança ferroviária.
 
-Esses resultados demonstram que a escolha do algoritmo impacta diretamente a interpretação dos padrões nos dados.
+A integração desta técnica com visualizações geoespaciais estabeleceu um \textit{framework} metodológico reprodutível e robusto, representando um avanço significativo na análise de dados de transportes. A metodologia desenvolvida revelou padrões anteriormente não evidentes nos dados da ANTT, contribuindo para uma compreensão mais abrangente dos múltiplos fatores que caracterizam os acidentes ferroviários. Este trabalho não apenas valida a eficácia do \textit{Robust Sparse K-means} no contexto ferroviário, mas também estabelece uma base metodológica sólida que pode auxiliar no desenvolvimento de estratégias mais efetivas para a prevenção de acidentes e aprimoramento da segurança ferroviária no Brasil.
 
 \renewcommand{\refname}{Referências}
 \begin{thebibliography}{00}
-\bibitem{antt2025} ANTT, ``Relatório de Acompanhamento de Acidentes Ferroviários (RAAF),'' Agência Nacional de Transportes Terrestres, 2025. [Online]. Disponível: https://dados.antt.gov.br/dataset/relatorio-de-acompanhamento-de-acidentes-ferroviarios-raaf
+\bibitem{b1} ANTT, ``Relatório de Acompanhamento de Acidentes Ferroviários (RAAF),'' Agência Nacional de Transportes Terrestres, 2025. [Online]. Disponível: https://dados.antt.gov.br/dataset/relatorio-de-acompanhamento-de-acidentes-ferroviarios-raaf
 
-\bibitem{rskc2017} S. Brodinova, P. Filzmoser, T. Ortner, C. Breiteneder, and M. Zaharieva, ``Robust and sparse k-means clustering for high-dimensional data,'' arXiv:1709.10012 [stat.ME], Sep. 2017. [Online]. Available: https://arxiv.org/abs/1709.10012
+\bibitem{b2} S. Brodinova, P. Filzmoser, T. Ortner, C. Breiteneder, and M. Zaharieva, ``Robust and sparse k-means clustering for high-dimensional data,'' arXiv:1709.10012 [stat.ME], Sep. 2017. [Online]. Available: https://arxiv.org/abs/1709.10012
 
-\bibitem{kmeans1967} J. MacQueen, ``Some methods for classification and analysis of multivariate observations,'' in Proc. 5th Berkeley Symp. Math. Stat. Probab., Oakland, CA, USA, 1967, vol. 1, no. 14, pp. 281-297.
+\bibitem{b3} J. MacQueen, ``Some methods for classification and analysis of multivariate observations,'' in Proc. 5th Berkeley Symp. Math. Stat. Probab., Oakland, CA, USA, 1967, vol. 1, no. 14, pp. 281-297.
 
-\bibitem{elbow_method1953} R. L. Thorndike, ``Who belongs in the family?,'' Psychometrika, vol. 18, no. 4, pp. 267-276, Dec. 1953, doi: 10.1007/BF02289263. [Online]. Disponível: https://doi.org/10.1007/BF02289263
+\bibitem{b4} R. L. Thorndike, ``Who belongs in the family?,'' Psychometrika, vol. 18, no. 4, pp. 267-276, Dec. 1953, doi: 10.1007/BF02289263. [Online]. Disponível: https://doi.org/10.1007/BF02289263
 
-\bibitem{geocoding2024} Google Developers, ``Geocoding API Overview,'' Google Maps Platform Documentation, 2024. [Online]. Disponível: https://developers.google.com/maps/documentation/geocoding
+\bibitem{b5} Google Developers, ``Geocoding API Overview,'' Google Maps Platform Documentation, 2024. [Online]. Disponível: https://developers.google.com/maps/documentation/geocoding
 
-\bibitem{meng2022} H. Meng et al., ``Railway accident prediction strategy based on ensemble learning,'' Accident Analysis \& Prevention, vol. 176, pp. 106817, 2022, doi: 10.1016/j.aap.2022.106817. [Online]. Available: https://www.sciencedirect.com/science/article/pii/S0001457522002524
+\bibitem{b6} H. Meng et al., ``Railway accident prediction strategy based on ensemble learning,'' Accident Analysis \& Prevention, vol. 176, pp. 106817, 2022, doi: 10.1016/j.aap.2022.106817. [Online]. Available: https://www.sciencedirect.com/science/article/pii/S0001457522002524
 
 \bibitem{pineda2023short} J. Pineda-Jaramillo, F. Bigi, T. Bosi, F. Viti, and A. D'Ariano, ``Short-term arrival delay time prediction in freight rail operations using data-driven models,'' IEEE Access, vol. 11, pp. 46966-46978, 2023, doi: 10.1109/ACCESS.2023.3275022.
 
@@ -618,3 +640,4 @@ Esses resultados demonstram que a escolha do algoritmo impacta diretamente a int
 \end{thebibliography}
 
 \end{document}
+    
